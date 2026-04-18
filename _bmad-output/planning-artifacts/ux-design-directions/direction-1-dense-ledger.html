@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 1 — Dense Ledger | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Dense Ledger specific */
+  .summary-bar {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-5);
+    margin-block-end: var(--space-5);
+  }
+  .summary-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-inline-start: var(--space-3);
+    border-inline-start: 2px solid var(--divider);
+  }
+  .summary-cell:first-child { border: none; padding: 0; }
+  .summary-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .summary-value {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-value.pos { color: var(--success); }
+  .summary-value.neg { color: var(--danger); }
+  .summary-sub {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .ledger-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) 0;
+    margin-block-end: var(--space-3);
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .ledger-filters {
+    display: flex;
+    gap: var(--space-1);
+    background: var(--surface-sunken);
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+  }
+  .filter-chip {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .filter-chip.active {
+    background: var(--surface);
+    color: var(--text-primary);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .ledger-table {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .ledger-table th {
+    background: var(--surface-sunken);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: start;
+    border-block-end: 1px solid var(--divider);
+  }
+  .ledger-table th.num { text-align: end; }
+
+  .ledger-table td {
+    padding: var(--space-3) var(--space-4);
+    border-block-end: 1px solid var(--divider);
+    font-size: var(--text-sm);
+    vertical-align: middle;
+  }
+  .ledger-table tr:last-child td { border-block-end: none; }
+  .ledger-table tbody tr:hover { background: var(--surface-sunken); }
+
+  .ledger-amount {
+    font-size: var(--text-base);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+
+  .ledger-contact {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .contact-name { font-weight: 600; color: var(--text-primary); }
+
+  .direction-indicator {
+    width: 6px; height: 32px;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    margin-inline-end: var(--space-2);
+    vertical-align: middle;
+  }
+  .dir-receivable { background: var(--success); }
+  .dir-payable { background: var(--danger); }
+
+  @media (max-width: 700px) {
+    .summary-bar { grid-template-columns: repeat(2, 1fr); }
+    .ledger-table { font-size: var(--text-xs); }
+    .ledger-table th, .ledger-table td { padding: var(--space-2); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الديون</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">دفتر الديون</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn" title="بحث">🔍</button>
+        <button class="icon-btn" title="إشعارات">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 01 — Dense Ledger</div>
+        هذا الاتجاه يُعامل البيانات المالية كدفتر محاسبة تقليدي: الأعداد أولاً، الكثافة عالية، الأعمدة محاذية بدقة (tabular-nums)، الصفوف الرفيعة تسمح برؤية 10+ دَين دفعة واحدة بدون تمرير. مناسب للمستخدم ذي الخبرة الذي يملك عشرات الديون ويريد مسحاً بصرياً سريعاً.
+      </div>
+
+      <!-- Summary Bar -->
+      <div class="summary-bar">
+        <div class="summary-cell">
+          <div class="summary-label">لي</div>
+          <div class="summary-value pos">1,845<span class="currency">JOD</span></div>
+          <div class="summary-sub">+ 5.5 جم ذهب</div>
+        </div>
+        <div class="summary-cell">
+          <div class="summary-label">عليّ</div>
+          <div class="summary-value neg">845<span class="currency">JOD</span></div>
+          <div class="summary-sub">+ 1,700 USD</div>
+        </div>
+        <div class="summary-cell">
+          <div class="summary-label">مستحق قريباً</div>
+          <div class="summary-value">2</div>
+          <div class="summary-sub">خلال 7 أيام</div>
+        </div>
+        <div class="summary-cell">
+          <div class="summary-label">متأخر</div>
+          <div class="summary-value neg">1</div>
+          <div class="summary-sub">1,500 USD متأخر</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="ledger-toolbar">
+        <div class="ledger-filters">
+          <button class="filter-chip active">الكل (10)</button>
+          <button class="filter-chip">مستحقات (5)</button>
+          <button class="filter-chip">التزامات (3)</button>
+          <button class="filter-chip">مسوّاة (2)</button>
+        </div>
+        <button class="btn btn-ghost">⇅ فرز بالتاريخ</button>
+      </div>
+
+      <!-- Table -->
+      <table class="ledger-table">
+        <thead>
+          <tr>
+            <th style="width: 40px;"></th>
+            <th>الطرف</th>
+            <th>الوصف</th>
+            <th>تاريخ الاستحقاق</th>
+            <th>الحالة</th>
+            <th class="num">المبلغ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="direction-indicator dir-payable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-2">ش</div><span class="contact-name">شركة التوريد العامة</span></div></td>
+            <td>دفعة مستلزمات مكتبية</td>
+            <td>20 أبريل 2026</td>
+            <td><span class="badge badge-danger">● متأخر</span></td>
+            <td class="ledger-amount amount-negative">-1,500<span class="currency">USD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-payable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-8">د</div><span class="contact-name">دار الكتب</span></div></td>
+            <td>اشتراك سنوي</td>
+            <td>22 أبريل 2026</td>
+            <td><span class="badge badge-warning">● مستحق قريباً</span></td>
+            <td class="ledger-amount amount-negative">-45<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-1">أ</div><span class="contact-name">أحمد الخالدي</span></div></td>
+            <td>قرض شخصي</td>
+            <td>25 أبريل 2026</td>
+            <td><span class="badge badge-warning">● مستحق قريباً</span></td>
+            <td class="ledger-amount amount-positive">+250<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-5">م</div><span class="contact-name">محمد السعدي</span></div></td>
+            <td>إيجار معدات</td>
+            <td>30 أبريل 2026</td>
+            <td><span class="badge badge-neutral">● قيد الانتظار</span></td>
+            <td class="ledger-amount amount-positive">+320<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-payable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-7">خ</div><span class="contact-name">خالد الناصر</span></div></td>
+            <td>سلفة سريعة</td>
+            <td>10 مايو 2026</td>
+            <td><span class="badge badge-neutral">● قيد الانتظار</span></td>
+            <td class="ledger-amount amount-negative">-200<span class="currency">USD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-4">ف</div><span class="contact-name">فاطمة أحمد</span></div></td>
+            <td>دفعة ذهب عائلية</td>
+            <td>15 مايو 2026</td>
+            <td><span class="badge badge-neutral">● قيد الانتظار</span></td>
+            <td class="ledger-amount amount-gold">+5.5<span class="currency">جم ذهب</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-payable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-3">س</div><span class="contact-name">سامر الزعبي</span></div></td>
+            <td>دفعة قرض</td>
+            <td>1 يونيو 2026</td>
+            <td><span class="badge badge-neutral">● قيد الانتظار</span></td>
+            <td class="ledger-amount amount-negative">-800<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-10">ن</div><span class="contact-name">نور الحوراني</span></div></td>
+            <td>تمويل مشروع</td>
+            <td>1 يوليو 2026</td>
+            <td><span class="badge badge-neutral">● قيد الانتظار</span></td>
+            <td class="ledger-amount amount-positive">+1,200<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-6">ل</div><span class="contact-name">ليلى حسن</span></div></td>
+            <td>وجبة غداء</td>
+            <td>—</td>
+            <td><span class="badge badge-success">✓ مسوّى</span></td>
+            <td class="ledger-amount" style="color: var(--text-muted);">75<span class="currency">JOD</span></td>
+          </tr>
+          <tr>
+            <td><span class="direction-indicator dir-receivable"></span></td>
+            <td><div class="ledger-contact"><div class="contact-avatar bg-9">م</div><span class="contact-name">مكتبة الصفا</span></div></td>
+            <td>ذهب مسلّم</td>
+            <td>—</td>
+            <td><span class="badge badge-success">✓ مسوّى</span></td>
+            <td class="ledger-amount" style="color: var(--text-muted);">2<span class="currency">جم ذهب</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </main>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const next = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const current = html.getAttribute('dir');
+  const next = current === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 6 — Segmented Summary | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .segment-heroes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-block-end: var(--space-6);
+  }
+
+  .segment-hero {
+    border-radius: var(--radius-lg);
+    padding: var(--space-6) var(--space-8);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .segment-hero.receivable {
+    background: var(--success-soft);
+    border: 1px solid var(--success);
+  }
+
+  .segment-hero.payable {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+  }
+
+  [data-theme="dark"] .segment-hero.receivable {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(74, 222, 128, 0.02));
+    border-color: rgba(74, 222, 128, 0.3);
+  }
+
+  [data-theme="dark"] .segment-hero.payable {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(248, 113, 113, 0.02));
+    border-color: rgba(248, 113, 113, 0.3);
+  }
+
+  .segment-hero-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-block-end: var(--space-3);
+  }
+
+  .segment-hero-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    font-size: var(--text-xl);
+  }
+
+  .receivable .segment-hero-icon { background: var(--success); color: var(--text-inverse); }
+  .payable .segment-hero-icon { background: var(--danger); color: var(--text-inverse); }
+
+  .segment-hero-label {
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+
+  .receivable .segment-hero-label { color: var(--success); }
+  .payable .segment-hero-label { color: var(--danger); }
+
+  .segment-hero-amount {
+    font-size: var(--text-5xl);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-block-end: var(--space-2);
+  }
+
+  .receivable .segment-hero-amount { color: var(--success); }
+  .payable .segment-hero-amount { color: var(--danger); }
+
+  .segment-hero-amount .currency {
+    font-size: var(--text-2xl);
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-inline-start: var(--space-2);
+  }
+
+  .segment-hero-sub {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .segment-hero-sub-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .sub-dot {
+    width: 6px; height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--text-muted);
+  }
+
+  /* Two-column lists */
+  .segments-lists {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+  }
+
+  .segment-column {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+    overflow: hidden;
+  }
+
+  .segment-column-header {
+    padding: var(--space-4) var(--space-5);
+    border-block-end: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .segment-column-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .segment-column.receivable .segment-column-title { color: var(--success); }
+  .segment-column.payable .segment-column-title { color: var(--danger); }
+
+  .segment-column-count {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .segment-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .segment-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-5);
+    border-block-end: 1px solid var(--divider);
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  .segment-item:last-child { border-block-end: none; }
+  .segment-item:hover { background: var(--surface-sunken); }
+
+  .segment-item-info {
+    min-width: 0;
+  }
+
+  .segment-item-name {
+    font-weight: 600;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .segment-item-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .segment-item-amount {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+  }
+
+  .segment-item.settled .segment-item-name,
+  .segment-item.settled .segment-item-amount {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+
+  /* Settled row (slim) */
+  .settled-row {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--divider);
+    padding: var(--space-3) var(--space-5);
+    margin-block-start: var(--space-5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  @media (max-width: 900px) {
+    .segment-heroes, .segments-lists { grid-template-columns: 1fr; }
+    .segment-hero-amount { font-size: var(--text-4xl); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الديون</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">الديون</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn">🔍</button>
+        <button class="icon-btn">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 06 — Segmented Summary</div>
+        فصل إدراكي فوري: "لي" (أخضر) و"عليّ" (أحمر) يحتلان الجزء العلوي بالتساوي، ثم تحت كل منهما قائمة خاصة. يُجيب فوراً على السؤالين الأكثر ترداداً: "كم مجموع ما لي؟ وكم مجموع ما عليّ؟" — في ثانيتين. التوازن البصري بين القسمين يُذكّر المستخدم أن الديون مُعادلة ذات طرفين، وليست كومة واحدة.
+      </div>
+
+      <!-- Two hero tiles -->
+      <div class="segment-heroes">
+        <div class="segment-hero receivable">
+          <div class="segment-hero-header">
+            <div class="segment-hero-icon">📈</div>
+            <div class="segment-hero-label">لي (مستحقات)</div>
+          </div>
+          <div class="segment-hero-amount">+1,845 <span class="currency">JOD</span></div>
+          <div class="segment-hero-sub">
+            <div class="segment-hero-sub-item"><span>5 ديون نشطة</span></div>
+            <div class="sub-dot"></div>
+            <div class="segment-hero-sub-item"><span style="color: var(--accent-gold);">+ 5.5 جم ذهب</span></div>
+          </div>
+        </div>
+
+        <div class="segment-hero payable">
+          <div class="segment-hero-header">
+            <div class="segment-hero-icon">📉</div>
+            <div class="segment-hero-label">عليّ (التزامات)</div>
+          </div>
+          <div class="segment-hero-amount">-845 <span class="currency">JOD</span></div>
+          <div class="segment-hero-sub">
+            <div class="segment-hero-sub-item"><span>3 ديون نشطة</span></div>
+            <div class="sub-dot"></div>
+            <div class="segment-hero-sub-item"><span>+ 1,700 USD</span></div>
+            <div class="sub-dot"></div>
+            <div class="segment-hero-sub-item"><span style="color: var(--danger); font-weight: 600;">1 متأخر</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two lists -->
+      <div class="segments-lists">
+
+        <!-- Receivable list -->
+        <div class="segment-column receivable">
+          <div class="segment-column-header">
+            <div class="segment-column-title">📈 لي</div>
+            <div class="segment-column-count">5 ديون</div>
+          </div>
+          <div class="segment-items">
+            <div class="segment-item">
+              <div class="contact-avatar bg-1">أ</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">أحمد الخالدي</div>
+                <div class="segment-item-meta">قرض شخصي · يستحق بعد 7 أيام</div>
+              </div>
+              <div class="segment-item-amount amount-positive">+250 JOD</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-5">م</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">محمد السعدي</div>
+                <div class="segment-item-meta">إيجار معدات · 30 أبريل</div>
+              </div>
+              <div class="segment-item-amount amount-positive">+320 JOD</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-4">ف</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">فاطمة أحمد 🪙</div>
+                <div class="segment-item-meta">دفعة ذهب عائلية · 15 مايو</div>
+              </div>
+              <div class="segment-item-amount amount-gold">+5.5 جم</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-10">ن</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">نور الحوراني</div>
+                <div class="segment-item-meta">تمويل مشروع · 1 يوليو</div>
+              </div>
+              <div class="segment-item-amount amount-positive">+1,200 JOD</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payable list -->
+        <div class="segment-column payable">
+          <div class="segment-column-header">
+            <div class="segment-column-title">📉 عليّ</div>
+            <div class="segment-column-count">3 ديون</div>
+          </div>
+          <div class="segment-items">
+            <div class="segment-item">
+              <div class="contact-avatar bg-2">ش</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">شركة التوريد العامة <span class="badge badge-danger" style="margin-inline-start: 6px; font-size: 10px;">متأخر</span></div>
+                <div class="segment-item-meta">دفعة مستلزمات · منذ يومين</div>
+              </div>
+              <div class="segment-item-amount amount-negative">-1,500 USD</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-8">د</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">دار الكتب</div>
+                <div class="segment-item-meta">اشتراك سنوي · بعد 4 أيام</div>
+              </div>
+              <div class="segment-item-amount amount-negative">-45 JOD</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-7">خ</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">خالد الناصر</div>
+                <div class="segment-item-meta">سلفة سريعة · 10 مايو</div>
+              </div>
+              <div class="segment-item-amount amount-negative">-200 USD</div>
+            </div>
+            <div class="segment-item">
+              <div class="contact-avatar bg-3">س</div>
+              <div class="segment-item-info">
+                <div class="segment-item-name">سامر الزعبي</div>
+                <div class="segment-item-meta">دفعة قرض · 1 يونيو</div>
+              </div>
+              <div class="segment-item-amount amount-negative">-800 JOD</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Settled footer -->
+      <div class="settled-row">
+        <div>✓ 2 دَين مسوّى مؤخراً (ليلى حسن · مكتبة الصفا)</div>
+        <a href="#" style="color: var(--primary); font-weight: 600;">عرض السجل ←</a>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const next = html.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>

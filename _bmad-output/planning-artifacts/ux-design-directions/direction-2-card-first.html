@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 2 — Card-First | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .summary-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-block-end: var(--space-6);
+  }
+  .summary-tile {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .summary-tile-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .summary-tile-value {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-tile.receivable .summary-tile-value { color: var(--success); }
+  .summary-tile.payable .summary-tile-value { color: var(--danger); }
+  .summary-tile-sub {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .debt-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    transition: all 200ms ease;
+    cursor: pointer;
+  }
+  .debt-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .card-header-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .card-contact-name {
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .card-amount-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .card-direction-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .card-amount {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-description {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--divider);
+    gap: var(--space-3);
+  }
+  .card-due {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .debt-card.settled {
+    opacity: 0.7;
+  }
+  .debt-card.settled .card-amount {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+
+  .page-header-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-block-end: var(--space-6);
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .filter-pills {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+  .filter-pill {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .filter-pill.active {
+    background: var(--primary);
+    color: var(--text-inverse);
+    border-color: var(--primary);
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الديون</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">الديون</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn">🔍</button>
+        <button class="icon-btn">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 02 — Card-First</div>
+        كل دَين بطاقة مستقلة بمساحة تنفُّس كافية. التسلسل يبدأ بالعلاقة (اسم الطرف والصورة) قبل الرقم — يُذكِّر المستخدم أن وراء كل رقم شخصاً. كثافة متوسطة (~9 بطاقات ظاهرة على شاشة 1440px)، مناسبة لمن يملك 5-30 ديناً. الانتقالية (hover) خفيفة ومضبوطة.
+      </div>
+
+      <!-- Summary strip -->
+      <div class="summary-strip">
+        <div class="summary-tile receivable">
+          <div class="summary-tile-label">📈 لي</div>
+          <div class="summary-tile-value">1,845 <span class="currency">JOD</span></div>
+          <div class="summary-tile-sub">+ 5.5 جم ذهب · 5 ديون</div>
+        </div>
+        <div class="summary-tile payable">
+          <div class="summary-tile-label">📉 عليّ</div>
+          <div class="summary-tile-value">845 <span class="currency">JOD</span></div>
+          <div class="summary-tile-sub">+ 1,700 USD · 3 ديون</div>
+        </div>
+      </div>
+
+      <div class="page-header-strip">
+        <div class="filter-pills">
+          <span class="filter-pill active">الكل (10)</span>
+          <span class="filter-pill">مستحقات</span>
+          <span class="filter-pill">التزامات</span>
+          <span class="filter-pill">مستحق قريباً</span>
+          <span class="filter-pill">مسوّى</span>
+        </div>
+      </div>
+
+      <div class="cards-grid">
+
+        <!-- Card 1 - Overdue -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-2">ش</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">شركة التوريد العامة</div>
+              <div class="card-meta">عليّ · متأخر</div>
+            </div>
+            <span class="badge badge-danger">متأخر</span>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-negative">-1,500 <span class="currency">USD</span></span>
+            </div>
+            <div class="card-description">دفعة مستلزمات مكتبية</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">استحق: 20 أبريل</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">تسديد</button>
+          </div>
+        </div>
+
+        <!-- Card 2 - Due soon -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-1">أ</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">أحمد الخالدي</div>
+              <div class="card-meta">لي · مستحق قريباً</div>
+            </div>
+            <span class="badge badge-warning">7 أيام</span>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-positive">+250 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">قرض شخصي</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 25 أبريل</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">تذكير</button>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-8">د</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">دار الكتب</div>
+              <div class="card-meta">عليّ · مستحق قريباً</div>
+            </div>
+            <span class="badge badge-warning">4 أيام</span>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-negative">-45 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">اشتراك سنوي</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 22 أبريل</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">تسديد</button>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-5">م</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">محمد السعدي</div>
+              <div class="card-meta">لي</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-positive">+320 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">إيجار معدات</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 30 أبريل</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">عرض</button>
+          </div>
+        </div>
+
+        <!-- Card 5 - Gold -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-4">ف</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">فاطمة أحمد</div>
+              <div class="card-meta">لي · ذهب</div>
+            </div>
+            <span class="badge badge-gold">🪙</span>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-gold">+5.5 <span class="currency">جم</span></span>
+            </div>
+            <div class="card-description">دفعة ذهب عائلية</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 15 مايو</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">عرض</button>
+          </div>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-3">س</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">سامر الزعبي</div>
+              <div class="card-meta">عليّ</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-negative">-800 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">دفعة قرض</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 1 يونيو</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">عرض</button>
+          </div>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-7">خ</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">خالد الناصر</div>
+              <div class="card-meta">عليّ</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-negative">-200 <span class="currency">USD</span></span>
+            </div>
+            <div class="card-description">سلفة سريعة</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 10 مايو</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">عرض</button>
+          </div>
+        </div>
+
+        <!-- Card 8 -->
+        <div class="debt-card">
+          <div class="card-header">
+            <div class="contact-avatar bg-10">ن</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">نور الحوراني</div>
+              <div class="card-meta">لي</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">المبلغ</span>
+              <span class="card-amount amount-positive">+1,200 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">تمويل مشروع</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">يستحق: 1 يوليو</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">عرض</button>
+          </div>
+        </div>
+
+        <!-- Card 9 - Settled -->
+        <div class="debt-card settled">
+          <div class="card-header">
+            <div class="contact-avatar bg-6">ل</div>
+            <div class="card-header-info">
+              <div class="card-contact-name">ليلى حسن</div>
+              <div class="card-meta">مسوّى</div>
+            </div>
+            <span class="badge badge-success">✓ مسوّى</span>
+          </div>
+          <div class="card-body">
+            <div class="card-amount-row">
+              <span class="card-direction-label">كان</span>
+              <span class="card-amount">75 <span class="currency">JOD</span></span>
+            </div>
+            <div class="card-description">وجبة غداء</div>
+          </div>
+          <div class="card-footer">
+            <span class="card-due">سُوّي: 15 أبريل</span>
+            <button class="btn btn-ghost" style="font-size: 13px; padding: 6px 12px;">السجل</button>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const next = html.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>

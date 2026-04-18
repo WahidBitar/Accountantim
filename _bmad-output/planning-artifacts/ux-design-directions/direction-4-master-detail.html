@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 4 — Master-Detail Split | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .split-layout {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: var(--space-5);
+    height: calc(100vh - 140px);
+  }
+
+  .master-panel {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .master-header {
+    padding: var(--space-4) var(--space-5);
+    border-block-end: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .master-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  .mini-stat-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .mini-stat-value {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mini-stat-value.pos { color: var(--success); }
+  .mini-stat-value.neg { color: var(--danger); }
+
+  .master-search {
+    position: relative;
+  }
+
+  .master-search input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    padding-inline-start: var(--space-10);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: var(--text-sm);
+  }
+
+  .master-search input:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 0;
+    border-color: transparent;
+  }
+
+  .master-search::before {
+    content: "🔍";
+    position: absolute;
+    inset-inline-start: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .master-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .master-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    border-block-end: 1px solid var(--divider);
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  .master-row:hover {
+    background: var(--surface-sunken);
+  }
+
+  .master-row.selected {
+    background: var(--primary-soft);
+    border-inline-start: 3px solid var(--primary);
+    padding-inline-start: calc(var(--space-4) - 3px);
+  }
+
+  .master-row-info {
+    min-width: 0;
+  }
+
+  .master-row-name {
+    font-weight: 600;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .master-row-desc {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .master-row-amount {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Detail panel */
+  .detail-panel {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .detail-header {
+    padding: var(--space-6);
+    border-block-end: 1px solid var(--divider);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .detail-header-info { flex: 1; }
+
+  .detail-contact-name {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-block-end: var(--space-1);
+  }
+
+  .detail-contact-meta {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
+
+  .detail-actions {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-6);
+  }
+
+  .detail-main-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-block-end: var(--space-6);
+    padding-block-end: var(--space-6);
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .detail-amount-label {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .detail-amount-value {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--success);
+  }
+
+  .detail-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-block-end: var(--space-6);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .field-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .field-value {
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .detail-section-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+    margin-block-end: var(--space-3);
+  }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .activity-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+  }
+
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+
+  .activity-text { flex: 1; }
+
+  .activity-date {
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+  }
+
+  @media (max-width: 1100px) {
+    .split-layout { grid-template-columns: 1fr; height: auto; }
+    .master-panel { max-height: 60vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الديون</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">الديون</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 04 — Master-Detail Split</div>
+        تقسيم شاشة سطح المكتب إلى قائمة (يمين) + تفاصيل الدَّين المحدد (يسار). يُتيح تصفح العشرات من الديون بدون مغادرة الصفحة أو فقدان السياق. مناسب للمستخدمين القوة (Power Users) ومديري الديون التجارية. على الهواتف ينهار إلى طبقتين متتاليتين (قائمة → تفاصيل).
+      </div>
+
+      <div class="split-layout">
+
+        <!-- Master -->
+        <div class="master-panel">
+          <div class="master-header">
+            <div class="master-summary">
+              <div>
+                <div class="mini-stat-label">لي</div>
+                <div class="mini-stat-value pos">+1,845 JOD</div>
+              </div>
+              <div>
+                <div class="mini-stat-label">عليّ</div>
+                <div class="mini-stat-value neg">-845 JOD</div>
+              </div>
+            </div>
+            <div class="master-search">
+              <input type="text" placeholder="ابحث عن طرف أو دَين...">
+            </div>
+          </div>
+
+          <div class="master-list">
+            <div class="master-row">
+              <div class="contact-avatar bg-2">ش</div>
+              <div class="master-row-info">
+                <div class="master-row-name">شركة التوريد العامة</div>
+                <div class="master-row-desc">عليّ · متأخر منذ يومين</div>
+              </div>
+              <div class="master-row-amount amount-negative">-1,500 USD</div>
+            </div>
+
+            <div class="master-row selected">
+              <div class="contact-avatar bg-1">أ</div>
+              <div class="master-row-info">
+                <div class="master-row-name">أحمد الخالدي</div>
+                <div class="master-row-desc">لي · بعد 7 أيام</div>
+              </div>
+              <div class="master-row-amount amount-positive">+250 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-8">د</div>
+              <div class="master-row-info">
+                <div class="master-row-name">دار الكتب</div>
+                <div class="master-row-desc">عليّ · بعد 4 أيام</div>
+              </div>
+              <div class="master-row-amount amount-negative">-45 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-5">م</div>
+              <div class="master-row-info">
+                <div class="master-row-name">محمد السعدي</div>
+                <div class="master-row-desc">لي · 30 أبريل</div>
+              </div>
+              <div class="master-row-amount amount-positive">+320 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-4">ف</div>
+              <div class="master-row-info">
+                <div class="master-row-name">فاطمة أحمد</div>
+                <div class="master-row-desc">لي · 15 مايو · 🪙</div>
+              </div>
+              <div class="master-row-amount amount-gold">+5.5 جم</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-7">خ</div>
+              <div class="master-row-info">
+                <div class="master-row-name">خالد الناصر</div>
+                <div class="master-row-desc">عليّ · 10 مايو</div>
+              </div>
+              <div class="master-row-amount amount-negative">-200 USD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-3">س</div>
+              <div class="master-row-info">
+                <div class="master-row-name">سامر الزعبي</div>
+                <div class="master-row-desc">عليّ · 1 يونيو</div>
+              </div>
+              <div class="master-row-amount amount-negative">-800 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-10">ن</div>
+              <div class="master-row-info">
+                <div class="master-row-name">نور الحوراني</div>
+                <div class="master-row-desc">لي · 1 يوليو</div>
+              </div>
+              <div class="master-row-amount amount-positive">+1,200 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-6">ل</div>
+              <div class="master-row-info">
+                <div class="master-row-name">ليلى حسن</div>
+                <div class="master-row-desc">مسوّى · 15 أبريل</div>
+              </div>
+              <div class="master-row-amount" style="color: var(--text-muted);">75 JOD</div>
+            </div>
+
+            <div class="master-row">
+              <div class="contact-avatar bg-9">م</div>
+              <div class="master-row-info">
+                <div class="master-row-name">مكتبة الصفا</div>
+                <div class="master-row-desc">مسوّى · 10 أبريل · 🪙</div>
+              </div>
+              <div class="master-row-amount" style="color: var(--text-muted);">2 جم</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail -->
+        <div class="detail-panel">
+          <div class="detail-header">
+            <div class="contact-avatar bg-1" style="width: 56px; height: 56px; font-size: var(--text-xl);">أ</div>
+            <div class="detail-header-info">
+              <div class="detail-contact-name">أحمد الخالدي</div>
+              <div class="detail-contact-meta">ahmed.khalidi@example.com · 3 ديون سابقة</div>
+            </div>
+            <div class="detail-actions">
+              <button class="btn btn-ghost">تعديل</button>
+              <button class="btn btn-primary">تسديد كامل</button>
+            </div>
+          </div>
+
+          <div class="detail-body">
+            <div class="detail-main-amount">
+              <span class="detail-amount-label">مستحق لي</span>
+              <span class="detail-amount-value">+250 JOD</span>
+              <span class="badge badge-warning">مستحق خلال 7 أيام</span>
+            </div>
+
+            <div class="detail-fields">
+              <div class="field">
+                <div class="field-label">نوع الدَين</div>
+                <div class="field-value">قرض شخصي</div>
+              </div>
+              <div class="field">
+                <div class="field-label">تاريخ الإنشاء</div>
+                <div class="field-value">12 أبريل 2026</div>
+              </div>
+              <div class="field">
+                <div class="field-label">تاريخ الاستحقاق</div>
+                <div class="field-value">25 أبريل 2026</div>
+              </div>
+              <div class="field">
+                <div class="field-label">العملة</div>
+                <div class="field-value">دينار أردني (JOD)</div>
+              </div>
+              <div class="field">
+                <div class="field-label">الرصيد المتبقي</div>
+                <div class="field-value amount-positive">250 JOD</div>
+              </div>
+              <div class="field">
+                <div class="field-label">إجمالي الدَين الأصلي</div>
+                <div class="field-value">250 JOD</div>
+              </div>
+            </div>
+
+            <div class="detail-section-title">📜 سجل النشاط</div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <span class="activity-dot"></span>
+                <span class="activity-text">تم إنشاء الدَين — قرض شخصي بقيمة 250 JOD</span>
+                <span class="activity-date">12 أبريل 2026</span>
+              </div>
+              <div class="activity-item">
+                <span class="activity-dot" style="background: var(--accent-gold);"></span>
+                <span class="activity-text">تم إرسال تذكير بالبريد</span>
+                <span class="activity-date">20 أبريل 2026</span>
+              </div>
+              <div class="activity-item">
+                <span class="activity-dot" style="background: var(--text-muted);"></span>
+                <span class="activity-text">تم عرض الدَين عبر رابط مشاركة</span>
+                <span class="activity-date">21 أبريل 2026</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const next = html.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>

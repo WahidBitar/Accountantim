@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 5 — Timeline Stream | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .compact-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-block-end: var(--space-6);
+  }
+
+  .summary-mini {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    border: 1px solid var(--divider);
+  }
+
+  .summary-mini-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-block-end: var(--space-1);
+  }
+
+  .summary-mini-value {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timeline {
+    position: relative;
+    padding-inline-start: var(--space-10);
+  }
+
+  .timeline::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 19px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--divider);
+  }
+
+  .date-label {
+    position: relative;
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin: var(--space-6) 0 var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    background: var(--surface-sunken);
+    border-radius: var(--radius-full);
+    display: inline-block;
+    inset-inline-start: calc(-1 * var(--space-10) + 4px);
+  }
+
+  .date-label:first-child {
+    margin-block-start: 0;
+  }
+
+  .event {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+    margin-block-end: var(--space-3);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .event::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--space-10) + 14px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-full);
+    background: var(--surface);
+    border: 3px solid var(--primary);
+    z-index: 1;
+  }
+
+  .event.event-created::before { border-color: var(--primary); }
+  .event.event-settled::before { border-color: var(--success); background: var(--success); }
+  .event.event-overdue::before { border-color: var(--danger); background: var(--danger); }
+  .event.event-reminder::before { border-color: var(--accent-gold); }
+  .event.event-partial::before { border-color: var(--warning); }
+
+  .event-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    font-size: var(--text-lg);
+    background: var(--surface-sunken);
+  }
+
+  .event.event-created .event-icon { background: var(--primary-soft); }
+  .event.event-settled .event-icon { background: var(--success-soft); }
+  .event.event-overdue .event-icon { background: var(--danger-soft); }
+  .event.event-reminder .event-icon { background: var(--accent-gold-soft); }
+  .event.event-partial .event-icon { background: var(--warning-soft); }
+
+  .event-body { min-width: 0; }
+
+  .event-title {
+    font-weight: 600;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    margin-block-end: 2px;
+  }
+
+  .event-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .event-contact {
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .event-amount {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .event-time {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 700px) {
+    .compact-summary { grid-template-columns: 1fr; }
+    .timeline { padding-inline-start: var(--space-6); }
+    .event { grid-template-columns: auto 1fr; }
+    .event-amount { grid-column: 2; text-align: end; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الأحداث</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">سجل الأحداث</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn">🔍</button>
+        <button class="icon-btn">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 05 — Timeline Stream</div>
+        تدفق زمني عكسي. كل تفاعل (إنشاء دَين، تذكير، دفعة جزئية، تسوية، انتهاء صلاحية) يظهر كحدث مستقل على خط زمني. هذا الاتجاه يُعامل الديون كـ سردية مستمرة لا كـ قائمة ثابتة — مناسب للمستخدم الذي يتذكر "من اتصل بي متى" أكثر مما يتذكر "رصيد فلان". يكشف نسيج العلاقات المالية عبر الزمن.
+      </div>
+
+      <!-- Compact summary -->
+      <div class="compact-summary">
+        <div class="summary-mini">
+          <div class="summary-mini-label">صافي الرصيد</div>
+          <div class="summary-mini-value" style="color: var(--success);">+1,000 JOD</div>
+        </div>
+        <div class="summary-mini">
+          <div class="summary-mini-label">أحداث هذا الأسبوع</div>
+          <div class="summary-mini-value">8</div>
+        </div>
+        <div class="summary-mini">
+          <div class="summary-mini-label">يحتاج انتباهك</div>
+          <div class="summary-mini-value" style="color: var(--danger);">3</div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline">
+
+        <div class="date-label">اليوم · 18 أبريل 2026</div>
+
+        <div class="event event-overdue">
+          <div class="event-icon">⚠️</div>
+          <div class="event-body">
+            <div class="event-title">أصبح الدَين متأخراً</div>
+            <div class="event-meta">
+              <span class="event-contact">شركة التوريد العامة</span>
+              <span>·</span>
+              <span>دفعة مستلزمات مكتبية</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount amount-negative">-1,500 USD</span>
+            <span class="event-time">منذ ساعتين</span>
+          </div>
+        </div>
+
+        <div class="event event-reminder">
+          <div class="event-icon">📧</div>
+          <div class="event-body">
+            <div class="event-title">تم إرسال تذكير</div>
+            <div class="event-meta">
+              <span class="event-contact">أحمد الخالدي</span>
+              <span>·</span>
+              <span>قرض شخصي · يستحق خلال 7 أيام</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount amount-positive">+250 JOD</span>
+            <span class="event-time">صباح اليوم</span>
+          </div>
+        </div>
+
+        <div class="date-label">أمس · 17 أبريل 2026</div>
+
+        <div class="event event-created">
+          <div class="event-icon">➕</div>
+          <div class="event-body">
+            <div class="event-title">دَين جديد تم تسجيله</div>
+            <div class="event-meta">
+              <span class="event-contact">نور الحوراني</span>
+              <span>·</span>
+              <span>تمويل مشروع · يستحق 1 يوليو</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount amount-positive">+1,200 JOD</span>
+            <span class="event-time">11:24 صباحاً</span>
+          </div>
+        </div>
+
+        <div class="event event-partial">
+          <div class="event-icon">💵</div>
+          <div class="event-body">
+            <div class="event-title">دفعة جزئية تم استلامها</div>
+            <div class="event-meta">
+              <span class="event-contact">محمد السعدي</span>
+              <span>·</span>
+              <span>إيجار معدات · باقي: 320 JOD</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount" style="color: var(--success);">+180 JOD</span>
+            <span class="event-time">6:45 مساءً</span>
+          </div>
+        </div>
+
+        <div class="date-label">15 أبريل 2026</div>
+
+        <div class="event event-settled">
+          <div class="event-icon">✓</div>
+          <div class="event-body">
+            <div class="event-title">تمت التسوية بالكامل</div>
+            <div class="event-meta">
+              <span class="event-contact">ليلى حسن</span>
+              <span>·</span>
+              <span>وجبة غداء</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount" style="color: var(--text-muted);">75 JOD</span>
+            <span class="event-time">2:10 بعد الظهر</span>
+          </div>
+        </div>
+
+        <div class="event event-created">
+          <div class="event-icon">➕</div>
+          <div class="event-body">
+            <div class="event-title">دَين ذهب جديد تم تسجيله</div>
+            <div class="event-meta">
+              <span class="event-contact">فاطمة أحمد</span>
+              <span>·</span>
+              <span>دفعة ذهب عائلية · يستحق 15 مايو</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount amount-gold">+5.5 جم ذهب</span>
+            <span class="event-time">9:30 صباحاً</span>
+          </div>
+        </div>
+
+        <div class="date-label">12 أبريل 2026</div>
+
+        <div class="event event-created">
+          <div class="event-icon">➕</div>
+          <div class="event-body">
+            <div class="event-title">دَين جديد تم تسجيله</div>
+            <div class="event-meta">
+              <span class="event-contact">أحمد الخالدي</span>
+              <span>·</span>
+              <span>قرض شخصي · يستحق 25 أبريل</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount amount-positive">+250 JOD</span>
+            <span class="event-time">3:15 مساءً</span>
+          </div>
+        </div>
+
+        <div class="date-label">10 أبريل 2026</div>
+
+        <div class="event event-settled">
+          <div class="event-icon">✓</div>
+          <div class="event-body">
+            <div class="event-title">تسوية دَين ذهب</div>
+            <div class="event-meta">
+              <span class="event-contact">مكتبة الصفا</span>
+              <span>·</span>
+              <span>ذهب مسلّم</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <span class="event-amount" style="color: var(--text-muted);">2 جم ذهب</span>
+            <span class="event-time">10:00 صباحاً</span>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const next = html.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>

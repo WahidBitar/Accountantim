@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فاكتبوه — الاتجاهات البصرية الستة</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding: var(--space-8) var(--space-6); max-width: 1400px; margin: 0 auto; }
+  .page-header { text-align: center; margin-block-end: var(--space-12); }
+  .brand-mark {
+    width: 88px; height: 88px;
+    border-radius: var(--radius-full);
+    background: var(--brand-ink);
+    color: var(--brand-gold);
+    display: grid; place-items: center;
+    margin: 0 auto var(--space-6);
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    box-shadow: var(--shadow-lg);
+  }
+  .page-title {
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    margin-block-end: var(--space-3);
+    letter-spacing: -0.02em;
+  }
+  .page-subtitle {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  .directions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: var(--space-5);
+  }
+  .direction-card {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    transition: all 200ms ease;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .direction-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .direction-number {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--accent-gold);
+    letter-spacing: 0.1em;
+  }
+  .direction-name {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .direction-tagline {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .direction-meta {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-block-start: var(--space-2);
+  }
+  .direction-cta {
+    margin-block-start: auto;
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--divider);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .guide-section {
+    margin-block-start: var(--space-12);
+    padding: var(--space-8);
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+  }
+  .guide-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    margin-block-end: var(--space-5);
+  }
+  .guide-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-5);
+  }
+  .guide-item {
+    padding: var(--space-4);
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+  }
+  .guide-item-title {
+    font-weight: 700;
+    color: var(--primary);
+    margin-block-end: var(--space-2);
+    font-size: var(--text-sm);
+  }
+  .guide-item-text {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="brand-mark">ف</div>
+  <h1 class="page-title">فاكتبوه — الاتجاهات البصرية الستة</h1>
+  <p class="page-subtitle">
+    ست رؤى بصرية مختلفة لنفس الشاشة الأساسية (The Glance). جميعها تطبق نفس نظام التصميم (Teal/Gold/Tajawal) لكن كل اتجاه يُجيب بطريقة مختلفة على السؤال المحوري: كيف يجب أن تبدو الأداة الهادئة؟
+  </p>
+</div>
+
+<div class="directions-grid">
+  <a href="direction-1-dense-ledger.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 01</div>
+      <h2 class="direction-name">Dense Ledger</h2>
+    </div>
+    <p class="direction-tagline">
+      دفتر محاسب تقليدي. قائمة مكثفة من الصفوف، الأعداد أولاً، أقل فوضى بصرية. يُكرّم كفاءة المستخدم ذي الخبرة.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">احترافي</span>
+      <span class="badge badge-neutral">كثيف</span>
+      <span class="badge badge-neutral">سريع</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+
+  <a href="direction-2-card-first.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 02</div>
+      <h2 class="direction-name">Card-First</h2>
+    </div>
+    <p class="direction-tagline">
+      كل دَين بطاقة مستقلة بظل خفيف ومساحات فسيحة. يركّز على العلاقة مع الطرف الآخر قبل الرقم.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">هادئ</span>
+      <span class="badge badge-neutral">فسيح</span>
+      <span class="badge badge-neutral">إنساني</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+
+  <a href="direction-3-hero-glance.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 03</div>
+      <h2 class="direction-name">Hero Glance</h2>
+    </div>
+    <p class="direction-tagline">
+      رقم الرصيد الإجمالي يأخذ نصف الشاشة بخط ضخم. لحظة تأملية قبل التفاصيل. أقرب الاتجاهات لفلسفة The Glance.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">رمزي</span>
+      <span class="badge badge-neutral">تأملي</span>
+      <span class="badge badge-neutral">فخم</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+
+  <a href="direction-4-master-detail.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 04</div>
+      <h2 class="direction-name">Master-Detail Split</h2>
+    </div>
+    <p class="direction-tagline">
+      قائمة على جانب، تفاصيل الدَّين المحدد على الجانب الآخر. مناسب لسطح المكتب ومدراء الديون الكثيرة.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">إنتاجي</span>
+      <span class="badge badge-neutral">سطح مكتب</span>
+      <span class="badge badge-neutral">للكثرة</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+
+  <a href="direction-5-timeline-stream.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 05</div>
+      <h2 class="direction-name">Timeline Stream</h2>
+    </div>
+    <p class="direction-tagline">
+      تدفق زمني عكسي. كل حدث (دين جديد، دفعة، تسوية) في سطر. يناسب من يفكر في الديون كـ قصة لا كـ أرصدة.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">حدثي</span>
+      <span class="badge badge-neutral">قصصي</span>
+      <span class="badge badge-neutral">محادثاتي</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+
+  <a href="direction-6-segmented-summary.html" class="direction-card">
+    <div>
+      <div class="direction-number">DIRECTION 06</div>
+      <h2 class="direction-name">Segmented Summary</h2>
+    </div>
+    <p class="direction-tagline">
+      تقسيم أفقي واضح: "لي" و"عليّ" بلونين، ثم قائمة تحت كل قسم. فصل إدراكي فوري بين المستحقات والالتزامات.
+    </p>
+    <div class="direction-meta">
+      <span class="badge badge-neutral">بصري</span>
+      <span class="badge badge-neutral">فوري</span>
+      <span class="badge badge-neutral">إدراكي</span>
+    </div>
+    <div class="direction-cta">← اعرض هذا الاتجاه</div>
+  </a>
+</div>
+
+<div class="guide-section">
+  <h2 class="guide-title">معايير التقييم أثناء المراجعة</h2>
+  <div class="guide-list">
+    <div class="guide-item">
+      <div class="guide-item-title">1. وضوح الهرمية المعلوماتية</div>
+      <div class="guide-item-text">أي اتجاه يُمكّنك من الإجابة فوراً على: "ما مجموع ما عليّ؟ ما مجموع ما لي؟" خلال ثانيتين؟</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-item-title">2. الكثافة البصرية</div>
+      <div class="guide-item-text">هل الكثافة تناسب استخدامك؟ قلة ديون = بطاقات؛ كثرة ديون = جدول كثيف.</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-item-title">3. التوازن مع "الأداة الهادئة"</div>
+      <div class="guide-item-text">هل الاتجاه يحترم مبدأ عدم الاحتفال بالتسجيل؟ هل يتجنب الضجيج البصري؟</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-item-title">4. الملاءمة مع RTL</div>
+      <div class="guide-item-text">جرّب كل اتجاه بالعربية (الافتراضي) ثم بالإنجليزية بواسطة زر التبديل. أيُّها يعمل في كلا الاتجاهين بتكافؤ؟</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-item-title">5. تجربة الوضع الداكن</div>
+      <div class="guide-item-text">بدّل إلى الوضع الداكن في كل اتجاه. أيُّها يبدو أكثر هدوءاً وأقل إجهاداً للعين؟</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-item-title">6. تصور الاستخدام اليومي</div>
+      <div class="guide-item-text">تخيل نفسك تفتح التطبيق 5 مرات يومياً. أيُّها يبدو أنك لن تملّه؟</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

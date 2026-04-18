@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Direction 3 — Hero Glance | فاكتبوه</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hero-section {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-12) var(--space-8);
+    margin-block-end: var(--space-6);
+    text-align: center;
+    border: 1px solid var(--divider);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-label {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-block-end: var(--space-4);
+  }
+
+  .hero-amount {
+    font-size: 96px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--success);
+    font-variant-numeric: tabular-nums;
+    margin-block-end: var(--space-3);
+  }
+
+  .hero-amount .currency {
+    font-size: var(--text-3xl);
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-inline-start: var(--space-3);
+    vertical-align: middle;
+  }
+
+  .hero-subline {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    margin-block-end: var(--space-6);
+  }
+
+  .hero-breakdown {
+    display: inline-flex;
+    gap: var(--space-8);
+    padding: var(--space-4) var(--space-6);
+    background: var(--surface-sunken);
+    border-radius: var(--radius-full);
+  }
+
+  .hero-breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .hero-breakdown-label {
+    color: var(--text-muted);
+  }
+
+  .hero-breakdown-value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hero-breakdown-value.pos { color: var(--success); }
+  .hero-breakdown-value.neg { color: var(--danger); }
+
+  .ornament {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: -80px;
+    transform: translateY(-50%);
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--primary-soft) 0%, transparent 70%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .list-section {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--divider);
+    overflow: hidden;
+  }
+
+  .list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .list-header-title {
+    font-size: var(--text-base);
+    font-weight: 700;
+  }
+
+  .list-header-count {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .compact-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .compact-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+    border-block-end: 1px solid var(--divider);
+    transition: background 150ms ease;
+    cursor: pointer;
+  }
+
+  .compact-item:last-child { border-block-end: none; }
+  .compact-item:hover { background: var(--surface-sunken); }
+
+  .compact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .compact-name {
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .compact-desc {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .compact-amount {
+    font-size: var(--text-base);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .compact-status {
+    min-width: 80px;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .hero-section { padding: var(--space-8) var(--space-4); }
+    .hero-amount { font-size: 56px; }
+    .hero-breakdown { flex-direction: column; gap: var(--space-2); padding: var(--space-3); }
+    .compact-item { grid-template-columns: 1fr auto; gap: var(--space-2); }
+    .compact-status { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">ف</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name">فاكتبوه</div>
+        <div class="sidebar-logo-tag">صغيراً أو كبيراً</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active">📋 الديون</div>
+      <div class="nav-item">👥 جهات الاتصال</div>
+      <div class="nav-item">📊 التقارير</div>
+      <div class="nav-item">🪙 أسعار الذهب</div>
+      <div class="nav-item">🔗 المشاركة</div>
+      <div class="nav-item">⚙️ الإعدادات</div>
+    </nav>
+  </aside>
+
+  <div>
+    <div class="topbar">
+      <div class="topbar-title">الديون</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary">+ دَين جديد</button>
+        <button class="icon-btn">🔍</button>
+        <button class="icon-btn">🔔</button>
+        <div class="avatar">و</div>
+      </div>
+    </div>
+
+    <main class="main">
+
+      <div class="annotation">
+        <div class="annotation-title">الاتجاه 03 — Hero Glance</div>
+        الرصيد الصافي (1,000 JOD لصالحي) يأخذ البطولة بخط 96px. لحظة تأملية ذات وزن رمزي قبل الدخول إلى التفاصيل. أقرب الاتجاهات لفلسفة The Glance التي بنيناها في Step 7: المستخدم يأتي ليتذكر حالته، لا ليقرأ جدولاً. التفاصيل تحتها — لكن محذوفة من البطولة عمداً لتحترم أولوية "النظرة الواحدة".
+      </div>
+
+      <!-- HERO -->
+      <div class="hero-section">
+        <div class="ornament"></div>
+        <div class="hero-label">صافي الرصيد</div>
+        <div class="hero-amount">+1,000 <span class="currency">JOD</span></div>
+        <div class="hero-subline">لصالحك — بعد موازنة المستحقات والالتزامات</div>
+        <div class="hero-breakdown">
+          <div class="hero-breakdown-item">
+            <span class="hero-breakdown-label">لي:</span>
+            <span class="hero-breakdown-value pos">+1,845 JOD</span>
+          </div>
+          <div class="hero-breakdown-item">
+            <span class="hero-breakdown-label">عليّ:</span>
+            <span class="hero-breakdown-value neg">-845 JOD</span>
+          </div>
+          <div class="hero-breakdown-item">
+            <span class="hero-breakdown-label">ذهب:</span>
+            <span class="hero-breakdown-value" style="color: var(--accent-gold);">+5.5 جم</span>
+          </div>
+          <div class="hero-breakdown-item">
+            <span class="hero-breakdown-label">USD:</span>
+            <span class="hero-breakdown-value neg">-1,700 USD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority list -->
+      <div class="list-section">
+        <div class="list-header">
+          <div class="list-header-title">⚠️ يحتاج انتباهك</div>
+          <div class="list-header-count">3 بنود</div>
+        </div>
+        <div class="compact-list">
+          <div class="compact-item">
+            <div class="contact-avatar bg-2">ش</div>
+            <div class="compact-info">
+              <div class="compact-name">شركة التوريد العامة</div>
+              <div class="compact-desc">دفعة مستلزمات · استحق منذ يومين</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-danger">متأخر</span></div>
+            <div class="compact-amount amount-negative">-1,500 USD</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-8">د</div>
+            <div class="compact-info">
+              <div class="compact-name">دار الكتب</div>
+              <div class="compact-desc">اشتراك سنوي · بعد 4 أيام</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-warning">قريب</span></div>
+            <div class="compact-amount amount-negative">-45 JOD</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-1">أ</div>
+            <div class="compact-info">
+              <div class="compact-name">أحمد الخالدي</div>
+              <div class="compact-desc">قرض شخصي · بعد 7 أيام</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-warning">قريب</span></div>
+            <div class="compact-amount amount-positive">+250 JOD</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height: var(--space-5);"></div>
+
+      <!-- Rest of debts -->
+      <div class="list-section">
+        <div class="list-header">
+          <div class="list-header-title">جميع الديون النشطة</div>
+          <div class="list-header-count">5 بنود</div>
+        </div>
+        <div class="compact-list">
+          <div class="compact-item">
+            <div class="contact-avatar bg-5">م</div>
+            <div class="compact-info">
+              <div class="compact-name">محمد السعدي</div>
+              <div class="compact-desc">إيجار معدات · 30 أبريل</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-neutral">نشط</span></div>
+            <div class="compact-amount amount-positive">+320 JOD</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-4">ف</div>
+            <div class="compact-info">
+              <div class="compact-name">فاطمة أحمد</div>
+              <div class="compact-desc">دفعة ذهب عائلية · 15 مايو</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-gold">ذهب</span></div>
+            <div class="compact-amount amount-gold">+5.5 جم</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-7">خ</div>
+            <div class="compact-info">
+              <div class="compact-name">خالد الناصر</div>
+              <div class="compact-desc">سلفة سريعة · 10 مايو</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-neutral">نشط</span></div>
+            <div class="compact-amount amount-negative">-200 USD</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-3">س</div>
+            <div class="compact-info">
+              <div class="compact-name">سامر الزعبي</div>
+              <div class="compact-desc">دفعة قرض · 1 يونيو</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-neutral">نشط</span></div>
+            <div class="compact-amount amount-negative">-800 JOD</div>
+          </div>
+          <div class="compact-item">
+            <div class="contact-avatar bg-10">ن</div>
+            <div class="compact-info">
+              <div class="compact-name">نور الحوراني</div>
+              <div class="compact-desc">تمويل مشروع · 1 يوليو</div>
+            </div>
+            <div class="compact-status"><span class="badge badge-neutral">نشط</span></div>
+            <div class="compact-amount amount-positive">+1,200 JOD</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌙 داكن</button>
+  <button class="control-btn" onclick="toggleDir()" id="dirBtn">EN / LTR</button>
+  <a href="index.html" class="control-btn">← الفهرس</a>
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'light' ? '🌙 داكن' : '☀️ فاتح';
+}
+function toggleDir() {
+  const html = document.documentElement;
+  const next = html.getAttribute('dir') === 'rtl' ? 'ltr' : 'rtl';
+  html.setAttribute('dir', next);
+  html.setAttribute('lang', next === 'rtl' ? 'ar' : 'en');
+  document.getElementById('dirBtn').textContent = next === 'rtl' ? 'EN / LTR' : 'عربي / RTL';
+}
+</script>
+</body>
+</html>
