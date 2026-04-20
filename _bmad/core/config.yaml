@@ -4,6 +4,6 @@
 # Date: 2026-04-14T04:47:42.519Z
 
 user_name: Wahid
-communication_language: Arabic, but the output always in English
+communication_language: English
 document_output_language: English
 output_folder: "{project-root}/_bmad-output"

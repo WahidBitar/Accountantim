@@ -20,6 +20,6 @@ trace_output: _bmad-output/test-artifacts/traceability
 
 # Core Configuration Values
 user_name: Wahid
-communication_language: Arabic, but the output always in English
+communication_language: English
 document_output_language: English
 output_folder: "{project-root}/_bmad-output"
