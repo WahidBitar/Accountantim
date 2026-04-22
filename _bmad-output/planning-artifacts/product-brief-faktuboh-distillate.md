@@ -1,12 +1,12 @@
 ---
-title: "Product Brief Distillate: Accountantim"
+title: "Product Brief Distillate: Faktuboh"
 type: llm-distillate
-source: "product-brief-accountantim.md"
+source: "product-brief-faktuboh.md"
 created: "2026-04-14"
 purpose: "Token-efficient context for downstream PRD creation"
 ---
 
-# Product Brief Distillate: Accountantim
+# Product Brief Distillate: Faktuboh
 
 ## Core Design Decisions
 
@@ -57,7 +57,7 @@ purpose: "Token-efficient context for downstream PRD creation"
 ## User Segments Detail
 
 - **Primary**: Individuals in cultures with strong informal lending traditions — Arabic-speaking communities, South Asian diaspora, West African communities. Gold lending between families is culturally common.
-- **Secondary**: Micro-merchants and shop owners using paper ledgers for customer credit. Their workflow maps directly to Accountantim (record credit, check balance, share statement). Shop owner extending credit to 50 regular customers is replacing a paper book.
+- **Secondary**: Micro-merchants and shop owners using paper ledgers for customer credit. Their workflow maps directly to Faktuboh (record credit, check balance, share statement). Shop owner extending credit to 50 regular customers is replacing a paper book.
 - **Launch market**: Arabic-speaking communities. Bilingual interface positions for both Arabic-first and English-speaking users in the region.
 
 ## Reviewer Insights Worth Preserving
@@ -70,7 +70,7 @@ purpose: "Token-efficient context for downstream PRD creation"
 - Web-only in a "record in the moment" use case is a friction point. The responsive design must feel native-fast on mobile browsers.
 
 ### Opportunity (upside to explore in PRD)
-- ROSCAs / rotating savings circles (chit funds, susus, tontines) — multi-party, multi-currency informal structures with no digital ledger. Accountantim's model maps closely to their needs. Potential partnership/distribution channel.
+- ROSCAs / rotating savings circles (chit funds, susus, tontines) — multi-party, multi-currency informal structures with no digital ledger. Faktuboh's model maps closely to their needs. Potential partnership/distribution channel.
 - Diaspora remittance platforms (Wise, Remitly) — co-marketing at the moment users think about cross-border money.
 - Gold dealers / bullion exchanges — white-label or co-branded ledger tool as value-add for their customers.
 - "Proof of debt" as a social primitive — the shareable link is a new kind of social object (verifiable, neutral record). Strong narrative for press and positioning.

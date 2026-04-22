@@ -1,20 +1,20 @@
 ---
-title: "Product Brief: Accountantim"
+title: "Product Brief: Faktuboh"
 status: "complete"
 created: "2026-04-14"
 updated: "2026-04-14T12:00:00Z"
 inputs: ["user interview", "web market research"]
 ---
 
-# Product Brief: Accountantim
+# Product Brief: Faktuboh
 
 ## Executive Summary
 
 Splitwise just paywalled its core features, earning a 65% one-star rating on Trustpilot. Millions of people who track personal debts — money lent to friends, borrowed from family, gold exchanged in cultural transactions — are looking for something better. They won't find it: every alternative is either too simple (no multi-currency, no statements) or too complex (enterprise accounting at $500+/month).
 
-Accountantim fills that gap. It is a lightweight SaaS personal debt ledger that supports multiple currencies and precious metals, transfers debts between parties with a simple journal entry, and lets any contact view their account statement through a shareable link — no account required, no app to install. That link is the product's growth engine: every shared statement introduces a new potential user at a moment of high engagement.
+Faktuboh fills that gap. It is a lightweight SaaS personal debt ledger that supports multiple currencies and precious metals, transfers debts between parties with a simple journal entry, and lets any contact view their account statement through a shareable link — no account required, no app to install. That link is the product's growth engine: every shared statement introduces a new potential user at a moment of high engagement.
 
-The timing is right: gold-denominated transactions are surging in the Middle East and South Asia, the informal credit economy is largely undigitized, and there is no product that combines multi-denomination tracking, debt transfers, and shareable proof-of-debt in a simple, affordable package. Accountantim launches web-first and free, with a $2.50/month tier for power users.
+The timing is right: gold-denominated transactions are surging in the Middle East and South Asia, the informal credit economy is largely undigitized, and there is no product that combines multi-denomination tracking, debt transfers, and shareable proof-of-debt in a simple, affordable package. Faktuboh launches web-first and free, with a $2.50/month tier for power users.
 
 ## The Problem
 
@@ -32,19 +32,19 @@ None of these handle precious metals. None generate shareable account statements
 
 ## The Solution
 
-Accountantim is a personal debt ledger with the power of accounting and the simplicity of a notebook.
+Faktuboh is a personal debt ledger with the power of accounting and the simplicity of a notebook.
 
 **Core experience:**
 
 - **Record debts in any denomination** — USD, EUR, SAR, gold grams, silver ounces, or any custom unit. Each debt entry is clear: who, what, how much, when. Debts are preserved in their original denomination: if you borrow 10 grams of gold, you owe 10 grams of gold — not a dollar equivalent.
 - **Currency exchange operations** — when a user wants to convert a debt from one denomination to another, an explicit exchange transaction locks in the rate at conversion time. This keeps the ledger honest and auditable.
 - **Transfer debts between parties** — Ali owes Sara $200, and Sara owes Reza $200. One journal entry nets it out: now Ali owes Reza directly. No accounting degree required.
-- **Shareable proof-of-debt links** — generate a unique link for any contact. They see their full transaction history and current balance — no account needed, no app to install. Every shared link is an acquisition touchpoint: the recipient discovers Accountantim at a high-engagement moment.
+- **Shareable proof-of-debt links** — generate a unique link for any contact. They see their full transaction history and current balance — no account needed, no app to install. Every shared link is an acquisition touchpoint: the recipient discovers Faktuboh at a high-engagement moment.
 - **Per-contact account view** — at a glance, see who owes you what and what you owe, broken down by currency and metal.
 
 ## What Makes This Different
 
-| | Accountantim | Splitwise | IOU Apps | Accounting Software |
+| | Faktuboh | Splitwise | IOU Apps | Accounting Software |
 |---|---|---|---|---|
 | Multi-currency | Yes (built-in) | Paywalled | No | Yes |
 | Precious metals | Yes | No | No | Enterprise only |
@@ -53,7 +53,7 @@ Accountantim is a personal debt ledger with the power of accounting and the simp
 | Complexity | Low | Low | Very low | Very high |
 | Price | Free / $2.50/mo | Free / $40/yr | Free | $500+/mo |
 
-**The defensible difference:** Accountantim is the only product that combines multi-denomination debt tracking (including precious metals), debt transfers between parties, and shareable account statements in a simple, affordable package. This combination serves a real workflow that no single competitor addresses.
+**The defensible difference:** Faktuboh is the only product that combines multi-denomination debt tracking (including precious metals), debt transfers between parties, and shareable account statements in a simple, affordable package. This combination serves a real workflow that no single competitor addresses.
 
 ## Who This Serves
 
@@ -91,7 +91,7 @@ The price point is deliberately low — the goal is wide adoption, not high ARPU
 - Currency/metal exchange operations with locked-in rate at conversion time
 - Debt transfer between parties (simple journal entry)
 - Per-contact account view with balance summary per denomination (no cross-currency aggregation)
-- Shareable account statement links (read-only, no account required) with Accountantim branding and sign-up CTA
+- Shareable account statement links (read-only, no account required) with Faktuboh branding and sign-up CTA
 - Account statement report generation
 - Data export (CSV) for portability and trust
 - Legal disclaimer: tracked debts are user records, not legally binding contracts
@@ -108,10 +108,10 @@ The price point is deliberately low — the goal is wide adoption, not high ARPU
 
 ## Growth Engine
 
-The shareable statement link is the primary organic growth channel. Every shared link exposes a new potential user to Accountantim at a moment of high emotional engagement — when they are looking at a debt they owe or are owed. The recipient landing page includes a clear CTA to create their own account.
+The shareable statement link is the primary organic growth channel. Every shared link exposes a new potential user to Faktuboh at a moment of high emotional engagement — when they are looking at a debt they owe or are owed. The recipient landing page includes a clear CTA to create their own account.
 
 Secondary channels: targeted community seeding in diaspora and informal-lending communities, content marketing around personal finance management, and potential partnerships with remittance platforms and gold dealers.
 
 ## Vision
 
-If Accountantim succeeds, it becomes the default personal ledger — the place where people track all financial obligations between themselves and others. The product grows from debt tracking into a lightweight personal accounting tool that small businesses adopt for its simplicity. But the core remains: a clear, trustworthy record of who owes what to whom.
+If Faktuboh succeeds, it becomes the default personal ledger — the place where people track all financial obligations between themselves and others. The product grows from debt tracking into a lightweight personal accounting tool that small businesses adopt for its simplicity. But the core remains: a clear, trustworthy record of who owes what to whom.

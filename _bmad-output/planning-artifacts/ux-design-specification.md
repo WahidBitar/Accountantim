@@ -3,13 +3,13 @@ stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 lastStep: 14
 completedAt: 2026-04-18
 inputDocuments:
-  - product-brief-accountantim.md
-  - product-brief-accountantim-distillate.md
+  - product-brief-faktuboh.md
+  - product-brief-faktuboh-distillate.md
   - prd.md
   - prd-validation-report.md
 ---
 
-# UX Design Specification Accountantim
+# UX Design Specification Faktuboh
 
 **Author:** Wahid
 **Date:** 2026-04-16
@@ -20,7 +20,7 @@ inputDocuments:
 
 ### Project Vision
 
-Accountantim is a personal debt ledger that replaces scattered spreadsheets, chat messages, and unreliable memory with a single, clear system for tracking who owes what to whom. It supports multiple currencies and precious metals (tracked in grams) natively — a debt recorded in gold grams stays in gold grams, never auto-converted. Users can transfer debts between parties through simple journal entries and share read-only account statement links with contacts who need no account to view them.
+Faktuboh is a personal debt ledger that replaces scattered spreadsheets, chat messages, and unreliable memory with a single, clear system for tracking who owes what to whom. It supports multiple currencies and precious metals (tracked in grams) natively — a debt recorded in gold grams stays in gold grams, never auto-converted. Users can transfer debts between parties through simple journal entries and share read-only account statement links with contacts who need no account to view them.
 
 The product targets individuals and small businesses globally who lend and borrow regularly — especially in communities where informal lending is culturally embedded and may involve gold or multiple currencies. It launches as a responsive web application (mobile-first) with full bilingual support (Arabic RTL + English LTR) from day one.
 
@@ -37,7 +37,7 @@ Key insight: These users don't fear buttons — they fear **making mistakes they
 Shop owners and traders who extend informal credit to customers. Their workflow maps directly to the primary persona (record credit, check balance, share statement). A shop owner extending credit to 50 regular customers is replacing a paper ledger. They need the same core experience — no separate feature set required.
 
 **Statement recipients (viral loop targets)**
-People who receive shared statement links — their first contact with Accountantim. They need an instant, trustworthy experience: a clean, professional statement page that loads fast on any device and any network. The tone must convey "transparent record" not "accusation" — this is a culturally sensitive moment where trust is built or destroyed.
+People who receive shared statement links — their first contact with Faktuboh. They need an instant, trustworthy experience: a clean, professional statement page that loads fast on any device and any network. The tone must convey "transparent record" not "accusation" — this is a culturally sensitive moment where trust is built or destroyed.
 
 **Launch market:** Arabic-speaking communities, with bilingual interface positioning for both Arabic-first and English-speaking users in the region.
 
@@ -81,7 +81,7 @@ Using culturally familiar phrases ("someone borrowed from me", "I lent to...", "
 
 **The core experience is clarity, not capture.**
 
-Accountantim's defining experience is the moment a user opens the app and instantly sees their complete financial position — who owes them what, what they owe, across all contacts and all denominations, at a glance. This is the experience that replaces the mental fog of scattered spreadsheets and forgotten chat messages. The user opens Accountantim not primarily to record — but to **know**.
+Faktuboh's defining experience is the moment a user opens the app and instantly sees their complete financial position — who owes them what, what they owe, across all contacts and all denominations, at a glance. This is the experience that replaces the mental fog of scattered spreadsheets and forgotten chat messages. The user opens Faktuboh not primarily to record — but to **know**.
 
 The dashboard is not merely an overview — it is the user's **personal financial command center**. It should evoke the feeling of opening a well-organized notebook where everything is in its place. The emotional response is control and calm, not information overload.
 
@@ -90,7 +90,7 @@ The dashboard is not merely an overview — it is the user's **personal financia
 **Experience hierarchy (in order of importance):**
 
 1. **See the full picture** — Dashboard and account statements that answer "where do I stand?" instantly. This is the primary reason users open the app and the primary reason they come back.
-2. **Share proof — the act that transforms a private ledger into a shared social truth** — Sharing a statement is the mechanism that aligns the user's record with the reality of the debt (which exists between two people). Without this act, the product is merely a more organized spreadsheet. The share moment is where Accountantim becomes *different* from every predecessor. Second in daily frequency but first in product identity.
+2. **Share proof — the act that transforms a private ledger into a shared social truth** — Sharing a statement is the mechanism that aligns the user's record with the reality of the debt (which exists between two people). Without this act, the product is merely a more organized spreadsheet. The share moment is where Faktuboh becomes *different* from every predecessor. Second in daily frequency but first in product identity.
 3. **Record a debt** — Adding a new transaction. This is the input that feeds the system, and it must be fast and frictionless — but it serves the higher goal of maintaining an accurate, complete picture.
 
 **The "aha" moments (in order):**
@@ -143,7 +143,7 @@ Minimum required fields visible immediately: contact (select or type new name), 
 Toggling between Arabic and English should be instant and seamless, with the entire layout flipping direction naturally. The user should never feel "translated" — each language should feel native.
 
 **5. Understanding a statement (as recipient)**
-A person who receives a shared link and has never heard of Accountantim should understand what they're looking at within 5 seconds: who sent it, what the balance is, and what the transaction history shows. Zero learning curve.
+A person who receives a shared link and has never heard of Faktuboh should understand what they're looking at within 5 seconds: who sent it, what the balance is, and what the transaction history shows. Zero learning curve.
 
 **What should happen automatically:**
 - Balance recalculation on every transaction — always accurate, always current
@@ -158,8 +158,8 @@ Optimistic UI is permitted for **read operations** (dashboard rendering, stateme
 ### Critical Success Moments
 
 **Moment 0: "This looks legit" (Pre-acquisition — statement recipient)**
-Before any user signs up, a statement recipient sees Accountantim for the first time through a shared link. Within 5 seconds, they must conclude: "This is a real, trustworthy record." This moment precedes all other success moments chronologically — it is the entry point to the entire user funnel. Design the statement page as if it were the homepage.
-- **Enabled by:** Lightweight standalone page (<50KB) loading in under 3 seconds on slow networks; sender identity prominently displayed (sender's name, optional profile photo, "Member since [date]"); Accountantim logo and a one-sentence "What is Accountantim?" explanation at the top; clear verification cues (HTTPS, domain visible, "Cryptographically unique — cannot be forged"); contextual reassurance ("This is not a bill, not a legal demand, not a payment request — it's a shared record for your review"); visual language matching trusted messaging apps (clean, white space, familiar iconography), not formal banking apps; sign-up CTA visible but not dominant, appearing after the statement is understood.
+Before any user signs up, a statement recipient sees Faktuboh for the first time through a shared link. Within 5 seconds, they must conclude: "This is a real, trustworthy record." This moment precedes all other success moments chronologically — it is the entry point to the entire user funnel. Design the statement page as if it were the homepage.
+- **Enabled by:** Lightweight standalone page (<50KB) loading in under 3 seconds on slow networks; sender identity prominently displayed (sender's name, optional profile photo, "Member since [date]"); Faktuboh logo and a one-sentence "What is Faktuboh?" explanation at the top; clear verification cues (HTTPS, domain visible, "Cryptographically unique — cannot be forged"); contextual reassurance ("This is not a bill, not a legal demand, not a payment request — it's a shared record for your review"); visual language matching trusted messaging apps (clean, white space, familiar iconography), not formal banking apps; sign-up CTA visible but not dominant, appearing after the statement is understood.
 
 **Moment 1: "I can see everything" (Activation — first session)**
 The user registers, records their first debt, and for the first time sees a clean dashboard showing that contact's balance. Even with just one entry, the user glimpses what the full picture will look like. The activation target: this happens within 3 minutes of registration.
@@ -178,7 +178,7 @@ Beyond passive dashboard viewing, users need clear visual signals when something
 - **Enabled by:** Badge counts on the contact row for unread confirmations or new events; a single unified "what's new" entry point on the dashboard; real-time updates via the app's push connection.
 
 **Moment 4: "That was easy" (Delight — complex operation)**
-The user performs a debt transfer or currency exchange — operations that would be nightmarish in a spreadsheet. In Accountantim, it takes a few taps, the audit trail is automatic, and both contacts' balances update correctly. Complex accounting, simple experience.
+The user performs a debt transfer or currency exchange — operations that would be nightmarish in a spreadsheet. In Faktuboh, it takes a few taps, the audit trail is automatic, and both contacts' balances update correctly. Complex accounting, simple experience.
 - **Enabled by:** Guided flows that hide accounting complexity (journal entry details, rate-locking) behind plain-language steps ("transfer this debt to another contact", "settle in a different currency"); automatic audit trail generation; visible confirmation of both-sided effect.
 
 **Make-or-break flows:**
@@ -235,7 +235,7 @@ These items surfaced during UX discovery but require product-level decisions bey
 
 ### Micro-Emotions
 
-Of the six micro-emotion pairs considered, three are decisive for Accountantim:
+Of the six micro-emotion pairs considered, three are decisive for Faktuboh:
 
 - **Confidence over skepticism** — users must trust balances without double-checking. Design must avoid anything that undermines numeric authority: no animated counters, no placeholder dashes, no "approximate" framings.
 - **Silent efficiency over celebration** — completing a task should feel like closing a drawer, not winning a prize. No confetti, no streaks, no achievements, no sound effects on save.
@@ -264,7 +264,7 @@ Emotional goals translate directly to non-negotiable design rules:
 Visual stillness, predictable layouts, and unchanging typography are emotional choices, not aesthetic ones. Motion is reserved for navigation, never for numbers.
 
 **Principle 2: Quiet utility beats loud delight.**
-Accountantim is the tool the user reaches for without thinking — it should feel like a well-worn notebook, not a game. Celebration is the absence of friction, not the presence of animation.
+Faktuboh is the tool the user reaches for without thinking — it should feel like a well-worn notebook, not a game. Celebration is the absence of friction, not the presence of animation.
 
 **Principle 3: Ambient reassurance over foreground announcement.**
 The user's peace of mind comes from knowing the app is reliable even when closed. Trust signals belong in the background, not in pop-ups.
@@ -285,18 +285,18 @@ Seven products were selected as references, each chosen to teach a specific patt
 
 **Splitwise** — The closest functional competitor.
 - *What it teaches:* Net balance display (who owes whom, by how much, without intermediate numbers); settle-up flow that clears balances with a single action; per-transaction currency support within a shared group.
-- *What to reject:* Group-centric model (Accountantim is individual-first); UI density accumulated through feature creep; opinionated categorization.
-- *Primary value:* Provides a proven model for "settle up" mechanics and net-balance summarization — both are direct requirements for Accountantim.
+- *What to reject:* Group-centric model (Faktuboh is individual-first); UI density accumulated through feature creep; opinionated categorization.
+- *Primary value:* Provides a proven model for "settle up" mechanics and net-balance summarization — both are direct requirements for Faktuboh.
 
 **Wise (formerly TransferWise)** — The benchmark for trust in multi-currency UX.
 - *What it teaches:* Each currency held in a visibly distinct wallet with no hidden conversion; transparent fee and exchange-rate display in calm tone; "last updated" indicators that convey freshness without anxiety; typography where digits do not animate, shift, or fluctuate.
-- *Primary value:* Sets the visual grammar for Accountantim's multi-currency and gold-in-grams requirements — denomination integrity is not a feature Wise added, it is the organizing principle of their product.
+- *Primary value:* Sets the visual grammar for Faktuboh's multi-currency and gold-in-grams requirements — denomination integrity is not a feature Wise added, it is the organizing principle of their product.
 
 #### Tier B — Quiet Utility Benchmarks
 
 **Apple Wallet** — The embodiment of trustworthy quiet utility.
 - *What it teaches:* Card-stack metaphor where each entity gets a distinct visual card; success states communicated with a minimal checkmark and haptic, never confetti or sound; visual permanence — cards do not rearrange themselves unexpectedly.
-- *Primary value:* A model for representing each counterparty (person or business) as a card in Accountantim, with all their state surfaced on that card.
+- *Primary value:* A model for representing each counterparty (person or business) as a card in Faktuboh, with all their state surfaced on that card.
 
 **Apple Notes** — Zero celebration, universal familiarity, search-first access.
 - *What it teaches:* Auto-save that is invisible (no "saved!" messaging); search as the primary discovery tool (rather than requiring the user to organize); no opinion imposed on content — no categorization pressure, no gamification, no suggestions.
@@ -306,7 +306,7 @@ Seven products were selected as references, each chosen to teach a specific patt
 
 **WhatsApp** — The de-facto UX grammar for Arabic-speaking users.
 - *What it teaches:* Contact-list pattern showing counterparty name, summary snippet, and timestamp at a glance; share-link generation, copy, and external distribution mechanics; status signals (the well-known ticks) for message delivery; reliable RTL/LTR handling with Latin numbers inside Arabic text.
-- *What to reject:* Chat-based interaction model — Accountantim should not invite message-style exchange between parties; only borrow the visual grammar.
+- *What to reject:* Chat-based interaction model — Faktuboh should not invite message-style exchange between parties; only borrow the visual grammar.
 - *Primary value:* Reduces learning curve dramatically. 90%+ of target users open WhatsApp daily — any pattern borrowed from it feels immediately native.
 
 **Regional Fintech (STC Pay / Careem Pay / Mada reference apps)** — Money UX calibrated for Arabic-speaking users.
@@ -317,15 +317,15 @@ Seven products were selected as references, each chosen to teach a specific patt
 
 **Linear** — Quiet utility translated to the web.
 - *What it teaches:* Keyboard-first interaction for power users; a command palette (Cmd/Ctrl+K) as a universal access layer for common operations; onboarding that is invisible — the product is usable on first load with contextual hints rather than forced tutorials; animation reserved strictly for navigation between views, never for data.
-- *Primary value:* Since Accountantim launches as responsive web, Linear is the reference for how a web utility can feel fast and serious simultaneously.
+- *Primary value:* Since Faktuboh launches as responsive web, Linear is the reference for how a web utility can feel fast and serious simultaneously.
 
 ### Transferable UX Patterns
 
-Patterns are grouped by application area and mapped to specific Accountantim features. Each pattern has a decision: **Adopt** (use as-is), **Adapt** (use with modification), or **Avoid** (do not use).
+Patterns are grouped by application area and mapped to specific Faktuboh features. Each pattern has a decision: **Adopt** (use as-is), **Adapt** (use with modification), or **Avoid** (do not use).
 
 #### Navigation & Information Architecture
 
-| Pattern | Source | Decision | Application in Accountantim |
+| Pattern | Source | Decision | Application in Faktuboh |
 |---|---|---|---|
 | Contact list as entry point | WhatsApp | Adopt | Parties list is the primary home screen; each party shows name, net balance, last transaction date |
 | Card-stack for entities | Apple Wallet | Adapt | Each counterparty rendered as a card in the list; tapping reveals full statement |
@@ -334,7 +334,7 @@ Patterns are grouped by application area and mapped to specific Accountantim fea
 
 #### Transaction & Balance Display
 
-| Pattern | Source | Decision | Application in Accountantim |
+| Pattern | Source | Decision | Application in Faktuboh |
 |---|---|---|---|
 | Net balance per party | Splitwise | Adopt | "Party owes you X" or "You owe party X" shown as the primary number on each card |
 | Multi-currency wallet view | Wise | Adopt | Each currency/denomination (USD, SAR, Gold grams, etc.) shown as a separate line per party — never auto-converted |
@@ -343,7 +343,7 @@ Patterns are grouped by application area and mapped to specific Accountantim fea
 
 #### Trust Signals & System State
 
-| Pattern | Source | Decision | Application in Accountantim |
+| Pattern | Source | Decision | Application in Faktuboh |
 |---|---|---|---|
 | Invisible auto-save | Apple Notes | Adopt | No "saved!" modals; a subtle toast confirming the transaction exists |
 | "Last synced" indicator | Wise | Adopt | Quiet timestamp showing freshness without alarm language |
@@ -352,14 +352,14 @@ Patterns are grouped by application area and mapped to specific Accountantim fea
 
 #### Sharing & External Flows
 
-| Pattern | Source | Decision | Application in Accountantim |
+| Pattern | Source | Decision | Application in Faktuboh |
 |---|---|---|---|
 | Share-link generation and copy | WhatsApp | Adopt | One-tap generation of a statement link, ready to paste into any messaging app |
 | Neutral recipient framing | Wise | Adapt | Recipient sees "Transactions recorded by [name]" rather than "[name] says you owe" |
 
 #### Bilingual & Localization
 
-| Pattern | Source | Decision | Application in Accountantim |
+| Pattern | Source | Decision | Application in Faktuboh |
 |---|---|---|---|
 | Arabic UI + Latin numerals | Regional fintech | Adopt | Default convention unless the user explicitly prefers Arabic-Indic numerals |
 | Instant language switch | WhatsApp | Adopt | Language toggle available at any time without losing context |
@@ -387,7 +387,7 @@ The following patterns are explicitly rejected because they conflict with the Em
 
 #### From Rigid Budgeting Apps (e.g., YNAB-style full budgeting, Mint-style categorization)
 
-- **Mandatory categorization of transactions** — Accountantim tracks relationships, not categories; imposing categories adds friction with no value.
+- **Mandatory categorization of transactions** — Faktuboh tracks relationships, not categories; imposing categories adds friction with no value.
 - **Long mandatory onboarding flows** — Users want to record a debt immediately; gated onboarding contradicts reassurance on first open.
 - **Envelope or budget-based mental models** — Wrong model for debt tracking between parties.
 
@@ -399,12 +399,12 @@ The following patterns are explicitly rejected because they conflict with the Em
 
 #### From Chat-First Tools
 
-- **Messaging interface between parties** — Accountantim is a ledger, not a chat app. Borrow the visual grammar of messaging, but not the interaction model.
+- **Messaging interface between parties** — Faktuboh is a ledger, not a chat app. Borrow the visual grammar of messaging, but not the interaction model.
 - **Real-time typing indicators, read receipts on personal messages** — Not applicable; creates social pressure.
 
 ### Design Inspiration Strategy
 
-The inspiration plan for Accountantim is expressed as three explicit commitments:
+The inspiration plan for Faktuboh is expressed as three explicit commitments:
 
 #### What to Adopt Directly
 
@@ -419,7 +419,7 @@ These patterns are ready to use without modification because they already align 
 
 #### What to Adapt With Modification
 
-These patterns are useful but need modification to fit Accountantim's specific context:
+These patterns are useful but need modification to fit Faktuboh's specific context:
 
 - **Settle-up mechanic** (Splitwise) — adapt from group-centric to pair-centric; one action clears a specific balance between the owner and one counterparty, not across a group.
 - **Card-stack metaphor** (Apple Wallet) — adapt from payment cards to relationship cards; each card represents a person or business with their full state visible.
@@ -451,7 +451,7 @@ This strategy forms an explicit decision record: any future UX proposal can be c
 
 **Supporting tooling:**
 - **@primeng/mcp server** for Claude Code integration — provides live, authoritative component documentation during AI-assisted development, significantly raising code-generation accuracy and reducing hallucinated API usage.
-- **Lightweight PrimeNG skill** — a project-level set of conventions and examples that codify how Accountantim uses PrimeNG (theme tokens, allowed components, motion discipline, RTL rules).
+- **Lightweight PrimeNG skill** — a project-level set of conventions and examples that codify how Faktuboh uses PrimeNG (theme tokens, allowed components, motion discipline, RTL rules).
 - **Tailwind CSS** — used strictly for **layout only** (grid, flex, spacing, responsive breakpoints). Not used for component styling. This separation keeps PrimeNG theme tokens as the single source of visual truth.
 - **AG Grid** — held in reserve for future "heavy grid" scenarios (virtual scrolling at scale, advanced filtering, frozen columns, pivoting). Not used in MVP; introduced only when PrimeNG's DataTable reaches its operational ceiling.
 
@@ -469,7 +469,7 @@ The @primeng/mcp server is the decisive factor for a small team. With it, Claude
 PrimeNG ships DataTable, Calendar, AutoComplete, Dialog, Toast, Chart, Tree, and ~80 other components out of the box. For a financial ledger that needs statements, party pickers, date handling, and confirmations, this is near-complete coverage from day one. Building equivalent components in a headless approach would delay MVP by weeks with no user-visible benefit.
 
 **4. Strong RTL support.**
-PrimeNG has mature, production-tested RTL handling — a hard requirement for Accountantim's Arabic-first positioning. Custom or less-mature systems would require building RTL support as a project concern rather than inheriting it.
+PrimeNG has mature, production-tested RTL handling — a hard requirement for Faktuboh's Arabic-first positioning. Custom or less-mature systems would require building RTL support as a project concern rather than inheriting it.
 
 **Trade-off accepted:** PrimeNG's default aesthetic is generic enterprise. A dedicated theming investment is required to reach the "quiet utility" visual language defined in the Emotional Design principles. This is a known cost, paid once, captured below.
 
@@ -477,7 +477,7 @@ PrimeNG has mature, production-tested RTL handling — a hard requirement for Ac
 
 **Theme foundation:** Start from PrimeNG's **Aura** theme preset, which exposes a modern token system (design tokens via CSS variables). Aura is chosen over Lara because its token architecture is cleaner and more amenable to custom preset generation.
 
-**Custom preset — "Accountantim Quiet":** A derived preset that overrides Aura's tokens to match the Emotional Design principles:
+**Custom preset — "Faktuboh Quiet":** A derived preset that overrides Aura's tokens to match the Emotional Design principles:
 - **Color:** Muted neutrals for numeric content (digit color is a near-black grey, not pure black); primary accent is a calm blue, never saturated; error state is muted amber, not alarm red; success state is quiet green, used sparingly.
 - **Typography:** Numeric values use a tabular-numeral font (e.g., Inter with `font-variant-numeric: tabular-nums`); font-weight remains stable across states to prevent visual jitter; numeric line-height fixed so rows align perfectly in tables.
 - **Motion:** Transition durations reduced; component ripples disabled globally; no celebratory micro-interactions.
@@ -495,7 +495,7 @@ Tailwind is explicitly **not** used to restyle PrimeNG components — all compon
 **AI-assisted development setup:**
 - `@primeng/mcp` configured in the repo's MCP server list so Claude Code queries PrimeNG v21 docs live.
 - A project-level **PrimeNG skill** (file-based) documents:
-  - The allowed subset of PrimeNG components for Accountantim (whitelist, not blacklist)
+  - The allowed subset of PrimeNG components for Faktuboh (whitelist, not blacklist)
   - Component-level conventions (e.g., always pass `aria-label` for icon-only buttons)
   - Theme token usage rules (never hardcode colors; always reference CSS variable)
   - Motion discipline (no `[@animation]` bindings outside of route transitions)
@@ -536,7 +536,7 @@ Until then, PrimeNG `DataTable` is the only grid component.
 
 **RTL validation.** Every new screen is tested in both LTR and RTL modes before merge. A visual regression suite (screenshots per direction) is established as part of CI.
 
-**Figma kit alignment.** PrimeNG publishes an official Figma kit that mirrors its components. Accountantim's Figma file uses this kit as the source, with overrides for the Quiet preset. This keeps design and implementation reconciled.
+**Figma kit alignment.** PrimeNG publishes an official Figma kit that mirrors its components. Faktuboh's Figma file uses this kit as the source, with overrides for the Quiet preset. This keeps design and implementation reconciled.
 
 ## Defining Interaction Specification
 
@@ -544,9 +544,9 @@ Until then, PrimeNG `DataTable` is the only grid component.
 
 **Human promise:** "We remember, so you don't have to." The Glance is the daily proof of that promise.
 
-**Engineering definition:** The defining experience of Accountantim is **"The 2-second glance"** — the user opens the app and, within two seconds of the home screen becoming visible, understands their complete financial position: who owes them, what they owe, and what is currently most important.
+**Engineering definition:** The defining experience of Faktuboh is **"The 2-second glance"** — the user opens the app and, within two seconds of the home screen becoming visible, understands their complete financial position: who owes them, what they owe, and what is currently most important.
 
-This is intentionally not the most common framing for a ledger product. Most bookkeeping apps frame the defining experience around **data entry** (making recording fast and easy). Accountantim deliberately inverts this: recording is a tax paid once per transaction, but retrieval happens continuously and must be effortless. The user's ranking of priorities (viewing first, sharing second, recording third) validates this choice.
+This is intentionally not the most common framing for a ledger product. Most bookkeeping apps frame the defining experience around **data entry** (making recording fast and easy). Faktuboh deliberately inverts this: recording is a tax paid once per transaction, but retrieval happens continuously and must be effortless. The user's ranking of priorities (viewing first, sharing second, recording third) validates this choice.
 
 If we perfect this one interaction, every other feature becomes an input or output of it:
 - Recording exists to feed The Glance.
@@ -572,7 +572,7 @@ Implications:
 - **Spreadsheets**: accurate but not available at the moment of conversation; entry is painful on mobile; no mental mapping to the human relationship.
 - **Paper notebooks**: culturally familiar and durable, but not searchable, not shareable, not resistant to loss.
 
-Accountantim's mental model is the digital extension of the paper notebook — with search, sharing, and persistence added, and nothing else.
+Faktuboh's mental model is the digital extension of the paper notebook — with search, sharing, and persistence added, and nothing else.
 
 ### 2.3 Success Criteria
 
@@ -599,9 +599,9 @@ These are not aspirational goals; they are the **engineering contract** for The 
 
 The component pattern — a scrollable list of cards, each representing a counterparty with a net balance — is standard. It exists in WhatsApp (contacts with last message), banking apps (account list with balances), and Splitwise (group members with net positions).
 
-What makes Accountantim's version distinctive is **what it refuses to do**:
+What makes Faktuboh's version distinctive is **what it refuses to do**:
 
-| Common "enhancement" in similar apps | Accountantim's choice |
+| Common "enhancement" in similar apps | Faktuboh's choice |
 |---|---|
 | Show aggregate net worth at the top | **No** — aggregating across currencies would violate denomination integrity |
 | Offer configurable widgets or dashboards | **No** — configuration is friction; the app decides priority automatically |
@@ -619,7 +619,7 @@ What makes Accountantim's version distinctive is **what it refuses to do**:
 - No additional action is required. The Glance begins the moment the home screen paints.
 
 **Phase 2: Interaction**
-- The user **does nothing**. Accountantim does the work.
+- The user **does nothing**. Faktuboh does the work.
 - The home screen renders a single vertical list of counterparty cards.
 - Cards are pre-sorted by the automatic prioritization rules defined in Core Experience (outstanding positive balances first, then outstanding negative, then recent-activity parties with zero balance).
 - Each card shows: counterparty name, net balance per denomination (on multiple lines if multi-currency), last transaction date.
@@ -664,7 +664,7 @@ The Glance does not emerge fully-formed on first use. It evolves across three li
 
 ### 2.7 Activation-to-Retention Loop
 
-The Glance only succeeds if users **reach** it with their own data. The funnel from signup to sustained Glance usage is the core growth mechanic of Accountantim, and it is explicitly designed here:
+The Glance only succeeds if users **reach** it with their own data. The funnel from signup to sustained Glance usage is the core growth mechanic of Faktuboh, and it is explicitly designed here:
 
 **The loop (4 stages):**
 

@@ -5,8 +5,8 @@ status: 'complete'
 completedAt: '2026-04-21'
 inputDocuments:
   - prd.md
-  - product-brief-accountantim.md
-  - product-brief-accountantim-distillate.md
+  - product-brief-faktuboh.md
+  - product-brief-faktuboh-distillate.md
   - prd-validation-report.md
   - ux-design-specification.md
 referenceDocuments:
@@ -40,7 +40,7 @@ referenceDocuments:
     kind: adr
     name: 0005-frontend-architecture.md
 workflowType: 'architecture'
-project_name: 'Accountantim'
+project_name: 'Faktuboh'
 user_name: 'Wahid'
 date: '2026-04-18'
 classification:
@@ -55,12 +55,30 @@ framingDecisions:
   databaseChoice: "open"                     # Azure SQL or PostgreSQL both on the table
 ---
 
-# Architecture Decision Document - Accountantim
+# Architecture Decision Document - Faktuboh
 
 **Author:** Wahid
 **Date:** 2026-04-18
 
 _This document builds collaboratively through step-by-step discovery. Sections are appended as we work through each architectural decision together._
+
+---
+
+## Change Log — Post-Adversarial-Review Revisions (2026-04-21)
+
+Five architecture decisions were rewritten following adversarial review (R-01 through R-10). The narrative below has been updated in place; the authoritative rationale lives in the ADRs. Read the ADRs for the full argument, revisit triggers, and supersession notes.
+
+| ADR | Supersedes | Change | Driver |
+|-----|-----------|--------|--------|
+| [ADR-021](./adrs/adr-021-auth0-identity-provider.md) | ADR-009 (Keycloak on ACA) | Identity provider is **Auth0 free tier** on custom domain `auth.faktuboh.com`. Keycloak removed entirely. | Keycloak JVM cold-start (20–40 s) violated NFR-P1 on scale-to-zero ACA. |
+| [ADR-022](./adrs/adr-022-application-level-bitemporal.md) | D4.1 implementation clause | Bitemporal storage moves from PG `temporal_tables` extension to **application-layer EF Core interceptor + `IBitemporal` marker interface**. | Azure PostgreSQL Flexible Server does not permit `temporal_tables`. |
+| [ADR-023](./adrs/adr-023-resend-transactional-email.md) | §6.5.10 (stub) | Transactional email provider is **Resend free tier, `eu-west-1`**, routed through Wolverine outbox. Auth emails handled by Auth0 (per ADR-021). | PRD FR3/FR42 cannot ship on a "console log only" stub. |
+| [ADR-024](./adrs/adr-024-minimal-apis-framework.md) | ADR-003 (FastEndpoints) | Backend framework is **ASP.NET Core Minimal APIs + FluentValidation + source-gen OpenAPI + .NET 10 `AddProblemDetails()` / `IExceptionHandler`**. Hellang ruled out. FastEndpoints Day 0 spike dissolved. | FastEndpoints × .NET 10 × Aspire 13 compatibility unverified; solo-dev schedule cannot absorb a failed spike. |
+| [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md) | D4.8 tier clause | KEK backing store is **Azure Key Vault Standard** (FIPS 140-2 L1), not Premium HSM. Envelope scheme unchanged. | Premium HSM (~€3.30/key/mo) breached the declared €0/month burn tolerance. |
+
+**Contract-drift corrections (PRD ↔ architecture):** NFR-P1 split (180 KB gz public-statement / 250 KB gz auth shell); NFR-SC4 sustained target **83 rps** only (fabricated 500 rps SLO-level burst claim removed; **500 rps retained as cache-sizing design posture** for WhatsApp-share spikes — not an SLO target, not an autoscale trigger); state management adds **Angular Signal Store** as explicit escape hatch for cross-slice state; locale set reduced to `en` + `ar-*` (French deferred); `Money` precision rule formalized — `numeric(19,4)` user-facing, `numeric(28,8)` for internal FX pivots.
+
+**Revisit-trigger inventory** is tracked in the ADRs themselves (RT-AUTH-*, RT-BITEMP-*, RT-EMAIL-*, RT-API-*, RT-KMS-*). The legacy RT-39 / RT-40 entries tied to Keycloak and FastEndpoints Day 0 gates are **dissolved**.
 
 ---
 
@@ -85,9 +103,9 @@ Two distinct **write paths**:
 ### 2.2 Critical NFRs Beyond Fintech Hygiene
 
 - **"The Glance" engineering contract:** TTR <2s perceived, TTI <500ms broadband / <1.5s 3G, CLS <0.05, **skeleton-until-authoritative** (never render a number we may retract), 100% balance correctness.
-- **Performance budgets (stricter than PRD):** initial JS <180KB gz, route-lazy <60KB, LCP <2.5s Slow 4G, INP <200ms, FCP <1.8s, TTFB <800ms.
+- **Performance budgets (split — stricter than original PRD):** **public-statement route: initial JS <180 KB gz** (hostile first-contact, Slow 4G, LCP <2.5 s); **owner authenticated shell: initial JS <250 KB gz** (returning users, warmer cache, richer UI — PrimeNG data-grid / Signal Forms overhead allowed). Route-lazy <60 KB gz (both apps). LCP <2.5 s Slow 4G (public), INP <200 ms, FCP <1.8 s, TTFB <800 ms. Each budget gated separately in CI via the bundle-graph check (per-app budget.json).
 - **Accessibility:** WCAG 2.1 AA baseline + **AAA contrast on financial surfaces**.
-- **Public statement scale (re-framed):** sustained **80 rps / burst 500 rps for 30s / p95 <300ms / cache hit-rate >95%** (original NFR-SC4 "5,000 req/min" was ambiguous; WhatsApp-driven traffic is spiky within seconds, not minutes).
+- **Public statement scale:** **PRD commitment is ~83 rps sustained** (NFR-SC4: 5,000 req/min ÷ 60). The architecture **designs against a conservative 500 rps burst for 30s posture** (WhatsApp-driven traffic is spiky within seconds, not minutes) — this burst figure is a cache/WAF/rate-limit *sizing assumption*, not a PRD SLA. Operating targets: p95 <300 ms / cache hit-rate >95%. **Load-test floor** (§2.10 storm drill): 166 rps sustained (≈2× PRD commitment) with the 500 rps burst posture as the upper spike.
 - **Locale pipeline:** bilingual day-one (AR-RTL + EN-LTR) is only a subset — the broader concern is a **locale-aware data pipeline** (script direction, numeral system, calendar, collation, currency-symbol anchoring, bidi isolation).
 - **Bitemporal semantics:** valid-time + transaction-time distinction is load-bearing for audit, rate feed, and long-lived statement links — every query needs explicit "as-of" semantics.
 - **Zoneless Angular:** hard UX constraint on change detection — affects state library choice and SSR compatibility.
@@ -110,7 +128,7 @@ Full-stack web:
 ### 2.5 Hard-Constrained vs Open-for-Decision
 
 **Hard-constrained (non-negotiable):**
-- Angular 21 zoneless, PrimeNG v21 Aura + "Accountantim Quiet" preset, Tailwind layout-only
+- Angular 21 zoneless, PrimeNG v21 Aura + "Faktuboh Quiet" preset, Tailwind layout-only
 - Tajawal + Inter self-hosted fonts
 - @primeng/mcp tooling
 - Azure Europe hosting region
@@ -148,9 +166,9 @@ Ranking reflects composite review from Party Mode and Self-Consistency Validatio
 | # | Risk | Why it matters |
 |---|---|---|
 | 1 | **Arithmetic correctness surface** (compound) | Two required facets: **(a) correctness at the primitive level** — typed Money/Weight domain primitives, gold-base unit algebra, declared per-denomination scale, property-based tests, mutation testing ≥90% on the canonical math module; **(b) architectural enforcement** — a single canonical `DomainMath` module with a build-time dependency rule preventing any other code path (live / backfill / reconciliation / export / CSV) from computing balances. Both facets must hold; either alone is insufficient. |
-| 2 | **Public statement serving path** | Hostile, unauthenticated, spike-prone (80 rps sustained / 500 rps burst for 30s / p95 <300ms / cache-hit >95%). Two-path isolation from owner SPA at WAF, cache, and origin layers. |
+| 2 | **Public statement serving path** | Hostile, unauthenticated, spike-prone. **SLO envelope:** 83 rps sustained (PRD NFR-SC4) / p95 <300ms / cache-hit >95%. **Cache-sizing design posture:** 500 rps short-burst for WhatsApp-share spikes (not an SLO target, not an autoscale trigger). Two-path isolation from owner SPA at WAF, cache, and origin layers. |
 | 3 | **GDPR erasure vs audit integrity** | Requires a declared cryptographic posture: key-shred **pseudonymization** vs tombstone **anonymization** (currently conflated). Schema-level surrogate-ID pattern plus outbox-driven erasure propagation to search, cache, analytics, logs. Re-identification via quasi-identifiers is a second-order attack at freemium scale and requires a minimum-k policy. |
-| 4 | **The Glance engineering contract** | 180KB initial JS, LCP <2.5s Slow 4G, INP <200ms, CLS <0.05, skeleton-until-authoritative, 100% balance correctness. Budget + zoneless + never-retract-a-number is a three-way tight constraint. |
+| 4 | **The Glance engineering contract** | Public-statement: **180 KB gz initial JS**. Owner shell: **250 KB gz initial JS**. LCP <2.5 s Slow 4G, INP <200 ms, CLS <0.05, skeleton-until-authoritative, 100% balance correctness. Split budget + zoneless + never-retract-a-number is a three-way tight constraint. |
 | 5 | **Audit immutability enforcement** | Irreversible under frame weighting — tampering kills audit. Must be provable via mutation testing across every write path including migrations, not just documented. Invisible failure mode; ranking reflects the visibility-weighting value judgment in §2.11, not low severity. |
 | 6 | **Concurrency & race on ledger writes** | Idempotency keys on statement confirmation + optimistic locking or serializable reads on ledger writes. Test with a Jepsen-lite harness. |
 | 7 | **Locale-as-pipeline** | Broader than bilingual: numerals, bidi, calendar, collation, currency-symbol anchoring. Mechanical to stress-test (AR+EN visual regression per PR). Pipeline discipline problem, not a showstopper. |
@@ -196,7 +214,8 @@ Architectural commitments to rehearsal-driven operations. Each rehearsal exercis
 - **Cross-jurisdictional legal-hold drill** — simulate a Saudi court order arriving during an in-flight GDPR erasure request. Verify the precedence rules resolve deterministically and are auditable.
 - **Rate-feed blackout + divergence drill** — inject a 45-minute feed outage, a 2× price spike, and a duplicate-timestamp payload. Verify locked rates remain stable, no NaN propagates, and users see explicit "rate stale" state rather than wrong math.
 - **Skeleton-to-authoritative CI synthetic** — continuous measurement under emulated Slow 4G + 400ms server RTT; fail the build if any calculation path renders a numeric before all dependent denominations hydrate.
-- **Public-statement storm drill** — k6 script replicating a WhatsApp-share spike (500 rps burst for 30s). Verify cache-hit > 95%, constant-time unknown-token response holds, and origin doesn't melt.
+- **Public-statement throughput fitness test** — k6 script sustaining **166 rps for 10 minutes** against the public-statement route (2× headroom over PRD NFR-SC4's 83 rps sustained target). Pass/fail: p95 < 300 ms, p99 < 1.5 s, zero 5xx, error rate < 0.1%. This is the SLO-bound load test.
+- **Public-statement cache-sizing storm drill** — k6 script replicating a WhatsApp-share viral spike (500 rps burst for 30s). **Validates cache-sizing posture, not SLO.** Verify cache-hit > 95% at AFD edge, constant-time unknown-token response holds, and origin (cache-miss tail) doesn't melt.
 
 ### 2.11 Value Judgments Declared
 
@@ -218,10 +237,10 @@ Five decisions shape every downstream section. They were settled deliberately �
 The owner workspace and the public statement surface ship from **one Angular workspace** but as **two distinct build artifacts** with compile-boundary separation. Initial direction of "single SPA, route-separated" was pressure-tested and revised: ESLint + CSP + cache-key namespacing is *policy*, not *isolation*. A bundle-graph leak on the hostile public surface is both a reconnaissance gift to attackers and a structural threat to the 180KB gz budget (§3.4). Two build targets make "the public statement bundle cannot import from the owner workspace" a property the compiler enforces, not a property linters hope holds.
 
 **D2 — Pressure-test against a cleaner greenfield; backend is not a DiTracker port.**
-Reference documents from DiTracker are a best-ideas pool, not a template. Stack family survives scrutiny (FastEndpoints-or-minimal-API + DDD + Aspire 13 + EF Core) because it maps to Accountantim's NFRs — not because DiTracker uses it. Multi-tenancy, SaaS-shaped tenancy conventions, and the handwritten TS contracts folder do **not** carry over. Every scaffolded file's PR must cite WHY (against NFRs/risks), not WHERE (from DiTracker).
+Reference documents from DiTracker are a best-ideas pool, not a template. Stack family survives scrutiny (ASP.NET Core Minimal APIs + DDD + Aspire 13 + EF Core) because it maps to Faktuboh's NFRs — not because DiTracker uses it. Multi-tenancy, SaaS-shaped tenancy conventions, and the handwritten TS contracts folder do **not** carry over. Every scaffolded file's PR must cite WHY (against NFRs/risks), not WHERE (from DiTracker).
 
-**D3 — Resolve FastEndpoints × Aspire 13 × .NET 10 compatibility before scaffold closes.**
-Revised from a "first-commit smoke-test gate" to a **one-day spike before scaffold work begins** (§3.7). The `ReflectionTypeLoadException` tracked in FastEndpoints #1013 must be reproduced against FE 7.x stable on Aspire 13 + .NET 10. If it reproduces, we switch **now** to ASP.NET minimal-API with an endpoint-filter slice pattern. FastEndpoints 8.x beta is **not** acceptable on a fintech production public surface. Deciding pre-scaffold costs ~10× less than a post-scaffold coupling rewrite.
+**D3 — Backend framework decided pre-scaffold; no spike required.**
+Resolved by [ADR-024](./adrs/adr-024-minimal-apis-framework.md): backend is **ASP.NET Core Minimal APIs + FluentValidation + source-generated OpenAPI** with problem-details handled by .NET 10 built-ins (`AddProblemDetails()` + `IExceptionHandler`). The FastEndpoints × Aspire 13 × .NET 10 compatibility spike originally scheduled here is **dissolved**: Minimal APIs are first-party on .NET 10, guaranteeing compatibility with Aspire 13 and removing one unknown from the scaffold critical path. Vertical-slice invariants from ADR-006 hold under Minimal APIs (`MapGroup` + per-slice registration files + `TypedResults`).
 
 **D4 — Compliance posture decided here, not deferred.**
 Bitemporal storage shape, cryptographic posture per data class, `LegalHold` as a first-class Domain aggregate, and `ProcessingActivity` as ambient context are all scaffolded day-one (§3.5). These would be prohibitively expensive to retrofit after the aggregate shapes, repository seams, and observability wiring are locked.
@@ -237,7 +256,7 @@ A `contracts/` placeholder directory is reserved at repo root. An ESLint rule fo
 | Language — backend | C# | 14 | Bundled with .NET 10 SDK. |
 | Host orchestration | .NET Aspire | 13.x | GA. AppHost + ServiceDefaults pattern. |
 | IDE | Visual Studio | 2026 | First-class .NET 10 / Aspire 13 support. |
-| HTTP framework | FastEndpoints 7.x stable **OR** ASP.NET minimal API | pending spike | Resolved by §3.7. FE 8.x beta **rejected** for fintech production. |
+| HTTP framework | ASP.NET Core Minimal APIs | GA (first-party on .NET 10) | Per [ADR-024](./adrs/adr-024-minimal-apis-framework.md). FastEndpoints and the pre-scaffold spike are dissolved — Minimal APIs + FluentValidation + source-gen OpenAPI cover the vertical-slice invariants. |
 | Messaging / outbox | Wolverine | latest stable | Transactional inbox/outbox with EF Core. |
 | ORM | EF Core | 10 | Matches runtime; temporal-table support varies by provider (§3.5 bitemporal). |
 | Mapping | Mapperly | latest stable | Source-generated; zero reflection on hot path. |
@@ -252,29 +271,29 @@ A `contracts/` placeholder directory is reserved at repo root. An ESLint rule fo
 | E2E | Playwright | latest stable | — |
 | Contract drift gate | Schemathesis **or** openapi-diff | latest | Day-one CI gate (§3.5). |
 
-Each inclusion above has a justification rooted in an Accountantim NFR or Step 2.7 risk — not inherited from DiTracker by default. Where DiTracker uses the same tool, the justification is re-derived.
+Each inclusion above has a justification rooted in an Faktuboh NFR or Step 2.7 risk — not inherited from DiTracker by default. Where DiTracker uses the same tool, the justification is re-derived.
 
 ### 3.3 Backend Scaffold
 
 **Solution layout (Aspire-rooted):**
 
 ```
-Accountantim.sln
+Faktuboh.sln
 ├── aspire/
-│   ├── Accountantim.AppHost/            # Aspire 13 orchestration
-│   └── Accountantim.ServiceDefaults/    # OTel, health, resilience wiring
+│   ├── Faktuboh.AppHost/            # Aspire 13 orchestration
+│   └── Faktuboh.ServiceDefaults/    # OTel, health, resilience wiring
 ├── src/
-│   ├── Accountantim.Api/                # HTTP host (FE OR minimal-API — see §3.7)
-│   ├── Accountantim.Application/        # Use cases, ProcessingActivity ambient context
-│   ├── Accountantim.Domain/             # Zero-dep. Aggregates, value objects, LegalHold, bitemporal primitives
-│   ├── Accountantim.Infrastructure/     # EF Core, Wolverine, Key Vault, read-models
-│   └── Accountantim.Contracts/          # Request/Response DTOs — single source of truth for TS generation (D5)
+│   ├── Faktuboh.Api/                # HTTP host (FE OR minimal-API — see §3.7)
+│   ├── Faktuboh.Application/        # Use cases, ProcessingActivity ambient context
+│   ├── Faktuboh.Domain/             # Zero-dep. Aggregates, value objects, LegalHold, bitemporal primitives
+│   ├── Faktuboh.Infrastructure/     # EF Core, Wolverine, Key Vault, read-models
+│   └── Faktuboh.Contracts/          # Request/Response DTOs — single source of truth for TS generation (D5)
 ├── tests/
-│   ├── Accountantim.Domain.Tests/       # Pure, in-memory
-│   ├── Accountantim.Application.Tests/  # Use-case level
-│   ├── Accountantim.Api.Tests/          # HTTP contract + endpoint integration
-│   ├── Accountantim.Infrastructure.Tests/   # EF/DB-against-testcontainers
-│   └── Accountantim.ArchitectureTests/  # NetArchTest — Domain purity, ambient-context enforcement
+│   ├── Faktuboh.Domain.Tests/       # Pure, in-memory
+│   ├── Faktuboh.Application.Tests/  # Use-case level
+│   ├── Faktuboh.Api.Tests/          # HTTP contract + endpoint integration
+│   ├── Faktuboh.Infrastructure.Tests/   # EF/DB-against-testcontainers
+│   └── Faktuboh.ArchitectureTests/  # NetArchTest — Domain purity, ambient-context enforcement
 ├── contracts/                            # Reserved for generated TS contracts (D5)
 └── .spike/                               # Disposable proof artifacts (see §3.7)
 ```
@@ -287,14 +306,14 @@ Accountantim.sln
 **Init command sequence** (executed after §3.7 spike outcome is known):
 
 ```
-dotnet new sln -n Accountantim
-dotnet new aspire-apphost -o aspire/Accountantim.AppHost
-dotnet new aspire-servicedefaults -o aspire/Accountantim.ServiceDefaults
-dotnet new classlib -o src/Accountantim.Domain            # no package deps
-dotnet new classlib -o src/Accountantim.Application
-dotnet new classlib -o src/Accountantim.Infrastructure
-dotnet new classlib -o src/Accountantim.Contracts
-dotnet new web      -o src/Accountantim.Api               # FE OR minimal-API template
+dotnet new sln -n Faktuboh
+dotnet new aspire-apphost -o aspire/Faktuboh.AppHost
+dotnet new aspire-servicedefaults -o aspire/Faktuboh.ServiceDefaults
+dotnet new classlib -o src/Faktuboh.Domain            # no package deps
+dotnet new classlib -o src/Faktuboh.Application
+dotnet new classlib -o src/Faktuboh.Infrastructure
+dotnet new classlib -o src/Faktuboh.Contracts
+dotnet new web      -o src/Faktuboh.Api               # FE OR minimal-API template
 # Test projects: xunit v3 + FluentAssertions + Testcontainers + NetArchTest
 # Solution wiring, project references, initial package adds omitted for brevity
 ```
@@ -363,9 +382,7 @@ Propagated via `AsyncLocal<ProcessingActivity>` established at the HTTP entry po
 
 **Bitemporal storage strategy (per R6):**
 - **Valid-time:** Explicit columns on every aggregate root that represents money-movement or identity state (`ValidFrom`, `ValidTo`). Modeled in the Domain layer as value objects, not EF concerns.
-- **Transaction-time:** Database-native mechanism.
-  - On **PostgreSQL** (primary candidate for Azure hosting): trigger-based history tables with `sys_period tstzrange`, queried via the `temporal_tables` extension pattern.
-  - On **SQL Server** (fallback): system-versioned temporal tables.
+- **Transaction-time:** Application-layer mechanism (per [ADR-022](./adrs/adr-022-application-level-bitemporal.md)). Azure PostgreSQL Flexible Server does not permit the `temporal_tables` extension, so bitemporal writes happen through an EF Core `SaveChanges` interceptor that inserts into per-entity `<entity>_history` tables. Entities opt in via the `IBitemporal` marker interface (`ValidFrom`/`ValidTo`/`RecordedAt`). SQL Server's native system-versioned temporal tables remain a viable fallback if the engine choice ever changes, but the application-layer interceptor is the committed path for MVP and keeps the scheme portable across providers.
 - **Query seam:** Repository interfaces expose `AsOf(DateTimeOffset transactionTime, DateTimeOffset? validTime = null)`. The default (no arguments) returns the current valid state as of now. The seam is defined at the Domain layer; the implementation lives in Infrastructure.
 
 **Cryptographic posture per data class (per R7):**
@@ -413,37 +430,24 @@ State transitions are Domain events, persisted to the audit log, and **block** t
 
 **Explicitly deferred (with their natural resolution step):**
 - Specific TypeScript-contract generator (NSwag vs openapi-typescript vs Kiota vs Aspire-native) — **Step 5 or Step 6.**
-- Exact HTTP framework package (FastEndpoints 7.x vs minimal API with endpoint-filter slices) — **§3.7 spike outcome.**
-- Database engine final selection (PostgreSQL vs SQL Server on Azure) — **Step 4 (component design) / Step 8 (infrastructure).** Both paths above are viable; the choice affects bitemporal implementation detail, not shape.
-- Identity provider (Entra External ID vs self-hosted Duende IdentityServer vs Auth0) — **Step 4 / Step 8.**
+- Database engine final selection (PostgreSQL vs SQL Server on Azure) — **Step 4 (component design) / Step 8 (infrastructure).** Both paths are viable; the application-layer bitemporal interceptor (ADR-022) works on either, so the choice affects operational posture, not scheme shape.
 
-### 3.7 Pre-Scaffold Spike Protocol — FastEndpoints × Aspire 13 × .NET 10
+**Resolved in Step 4 (were originally deferred here):**
+- HTTP framework → **ASP.NET Core Minimal APIs** per [ADR-024](./adrs/adr-024-minimal-apis-framework.md). FastEndpoints removed from scope.
+- Identity provider → **Auth0 free tier** (EU tenant, `auth.faktuboh.com` custom domain) per [ADR-021](./adrs/adr-021-auth0-identity-provider.md).
 
-**Goal:** Resolve D3 before the scaffold PR is opened. Time-boxed to **one working day.**
+### 3.7 Pre-Scaffold Spike Protocol — **DISSOLVED**
 
-**Procedure:**
-1. In `.spike/fe-aspire-smoke/`, scaffold a minimal Aspire 13 AppHost + ServiceDefaults + single FE 7.x (latest stable) API project on .NET 10.
-2. Define three endpoints: a GET returning a DTO, a POST accepting a DTO, and an endpoint that triggers a Wolverine message round-trip.
-3. Run under `dotnet run` via AppHost. Exercise all three endpoints through the Aspire dashboard's integrated client.
-4. **Observe:** Does the `ReflectionTypeLoadException` (FastEndpoints #1013) reproduce? Does OTel instrumentation propagate through FE's pipeline? Do endpoint-filters + FE's `Configure()` interact cleanly?
-
-**Decision rule (property-based, not symptom-based):**
-
-The spike's acceptance criterion is written in terms of the property that motivates ADR-006 — not the symptom that motivates the spike. Four vertical-slice properties must hold under FE 7.x + Aspire 13 + .NET 10:
-
-1. **Per-slice DI scope** — each endpoint can declare its own DI scope without leaking into sibling slices.
-2. **Per-slice auth** — auth requirements expressed at the slice, not in a shared pipeline branch keyed on route.
-3. **Per-slice testability** — endpoint + its handler are testable in isolation (WebApplicationFactory-level) without booting the full host graph.
-4. **Per-slice `ProcessingActivity` set point** — ambient context set at slice entry and propagated through handler, EF Core, Wolverine messages, Serilog logs, and OTel spans (per ADR-004).
-
-**Outcomes:**
-- **All four properties preserved; no #1013 reproduction:** Scaffold uses FastEndpoints 7.x. Pin observed versions in `.spike/fe-aspire-smoke/DECISION.md`.
-- **All four properties preserved via a documented workaround; #1013 reproduces but has a clean mitigation:** Scaffold uses FastEndpoints 7.x with the workaround pinned and cross-referenced from ADR-003.
-- **Any one property requires a pipeline hack to preserve, OR #1013 has no clean mitigation:** Scaffold uses **ASP.NET minimal API with endpoint-filter slice pattern** — one file per endpoint under `src/Accountantim.Api/Endpoints/`, mapping its own route and filters. Vertical-slice properties preserved; FE's ergonomics lost but NFR budget and ADR-006 invariant intact. **FastEndpoints 8.x beta is not evaluated** for fintech production.
-
-The rule is written this way because `#1013` is a symptom; vertical-slice preservation is the property. A green `#1013` with broken slice DI is still a rejection. A red `#1013` with a clean mitigation that preserves the four properties is acceptable.
-
-**Artifact:** Spike outcome committed to `.spike/fe-aspire-smoke/DECISION.md` with observed versions, a per-property evidence log (one paragraph per property above), the `#1013` reproduction trace, and the chosen path. This document is referenced from the Step 3 scaffold PR description so reviewers can verify the choice is grounded in the ADR-006 properties, not in release-note hope.
+> **Status: Dissolved (2026-04-21) by [ADR-024](./adrs/adr-024-minimal-apis-framework.md).**
+> This section originally described a one-day FastEndpoints × Aspire 13 × .NET 10 compatibility spike (the `ReflectionTypeLoadException` tracked in FastEndpoints #1013). FastEndpoints is now out of scope — the backend is **ASP.NET Core Minimal APIs + FluentValidation + source-gen OpenAPI** on .NET 10, which is first-party and guaranteed compatible with Aspire 13. No spike is required.
+>
+> **Vertical-slice invariants (originally tested by the spike) are preserved under Minimal APIs** via:
+> 1. **Per-slice DI scope** — each slice's registration file (`*Endpoints.cs`) owns its service registrations.
+> 2. **Per-slice auth** — `.RequireAuthorization()` on the slice's `MapGroup`, not in a shared pipeline branch.
+> 3. **Per-slice testability** — `WebApplicationFactory<Program>` + slice-scoped handlers remain testable in isolation.
+> 4. **Per-slice `ProcessingActivity` set point** — set via endpoint filter at `MapGroup` level; propagates through handler, EF Core, Wolverine messages, Serilog logs, and OTel spans (per ADR-004).
+>
+> The `.spike/fe-aspire-smoke/` directory and its `DECISION.md` artifact are not needed. Any existing draft of those files should be deleted at the start of the scaffold PR.
 
 ### 3.8 Architecture Decision Records
 
@@ -453,7 +457,7 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Status:** Accepted (2026-04-18) · supersedes D1
 
-**Context:** Owner workspace and public statement surface share design language, but the public surface is hostile (Step 2.7 R#2: 80 rps sustained / 500 rps burst / p95 < 300 ms / cache-hit > 95%). Public route budget: 180 KB gz / LCP < 2.5 s on Slow 4G.
+**Context:** Owner workspace and public statement surface share design language, but the public surface is hostile (Step 2.7 R#2: **SLO** = 83 rps sustained / p95 < 300 ms / cache-hit > 95%; **cache-sizing posture** = 500 rps WhatsApp-share short-burst absorbed at AFD edge). Public route budget: 180 KB gz / LCP < 2.5 s on Slow 4G.
 
 **Options considered:**
 - **A.** Two separate apps in two repos — maximum isolation; worst velocity; design-system duplication or brittle npm-link dance.
@@ -474,12 +478,12 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Status:** Accepted · supersedes D2
 
-**Context:** DiTracker is battle-tested B2B multi-tenant SaaS. Accountantim is B2C fintech, bilingual MENA + EU, personal / community ledger. Architecture frontmatter declares `referenceStackAuthority: advisory_only`.
+**Context:** DiTracker is battle-tested B2B multi-tenant SaaS. Faktuboh is B2C fintech, bilingual MENA + EU, personal / community ledger. Architecture frontmatter declares `referenceStackAuthority: advisory_only`.
 
 **Options considered:**
 - **A.** Fork DiTracker as starter; rip what doesn't fit.
 - **B.** Port DiTracker's skeleton verbatim; re-examine conventions post-scaffold.
-- **C.** Fresh scaffold; adopt DiTracker patterns only where they survive Accountantim NFR scrutiny.
+- **C.** Fresh scaffold; adopt DiTracker patterns only where they survive Faktuboh NFR scrutiny.
 
 **Decision:** **C.**
 
@@ -493,23 +497,19 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 #### ADR-003 — Pre-Scaffold Spike for FastEndpoints × Aspire 13 × .NET 10
 
-**Status:** Accepted · supersedes D3
+**Status:** **SUPERSEDED (2026-04-21) by [ADR-024](./adrs/adr-024-minimal-apis-framework.md).** FastEndpoints is out of scope; backend is ASP.NET Core Minimal APIs + FluentValidation + source-gen OpenAPI. The pre-scaffold spike is dissolved. Historical record retained below.
 
-**Context:** FastEndpoints issue #1013 reports `ReflectionTypeLoadException` on Aspire 13 + .NET 10. Resolution unverified for FE 7.x stable. FE 8.x beta rejected for fintech production. Initial plan was a first-commit smoke-test gate.
+**Context (historical):** FastEndpoints issue #1013 reports `ReflectionTypeLoadException` on Aspire 13 + .NET 10. Resolution was unverified for FE 7.x stable. FE 8.x beta was rejected for fintech production. The original plan was a first-commit smoke-test gate, later revised to a one-day pre-scaffold spike.
 
-**Options considered:**
+**Options originally considered:**
 - **A.** Commit to FE 7.x; smoke-test on first commit; pivot after if broken.
 - **B.** Commit to FE 8.x beta now.
 - **C.** Skip FE evaluation; commit to ASP.NET minimal-API with endpoint-filter slices.
 - **D.** One-day spike in `.spike/fe-aspire-smoke/` before the scaffold PR; pick A or C from spike evidence.
 
-**Decision:** **D.**
+**Original decision:** **D.** **Superseded outcome:** **C** — promoted directly without a spike because Minimal APIs are first-party on .NET 10 and the vertical-slice invariants from ADR-006 hold natively under `MapGroup` + per-slice registration files. See ADR-024 for the replacement decision record.
 
-**Consequences:** `+` Decision grounded in observed behavior, not release-note hope. `+` Pivot cost stays minimal. `+` Spike artifact (`DECISION.md` with version matrix + reproduction log) becomes a reviewable PR reference. `−` One-day delay on the scaffold PR. `−` Requires Aspire 13 + .NET 10 dev env to exist before scaffold work.
-
-**Reversibility:** Pre-scaffold pivot = trivial (delete `.spike/`, re-template). Post-scaffold pivot A → C ≈ 2+ sprints (endpoint coupling, pipeline conventions, test factories, validator wiring).
-
-**NFR / Risk links:** Fintech production surface, no-beta-on-money-path rule, §3.7 procedure.
+**NFR / Risk links:** Fintech production surface, no-beta-on-money-path rule. These still apply — they now bind the Minimal APIs decision instead.
 
 ---
 
@@ -517,7 +517,7 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Status:** Accepted · supersedes D4
 
-**Context:** GDPR erasure vs. audit integrity is Accountantim's central regulatory tension. Bitemporal storage, crypto-erasure per data class, `LegalHold` as a Domain aggregate, and `ProcessingActivity` as ambient context are all retrofit-hostile once aggregate shapes and repository seams land.
+**Context:** GDPR erasure vs. audit integrity is Faktuboh's central regulatory tension. Bitemporal storage, crypto-erasure per data class, `LegalHold` as a Domain aggregate, and `ProcessingActivity` as ambient context are all retrofit-hostile once aggregate shapes and repository seams land.
 
 **Options considered:**
 - **A.** Ship MVP with flat data shape; retrofit compliance when regulators escalate.
@@ -538,7 +538,7 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Status:** Accepted · supersedes D5 · generator choice deferred to Step 5 / 6
 
-**Context:** DiTracker ships a handwritten shared TS contracts folder; it drifts from C# DTOs. Accountantim goal: auto-generate TS from C# DTOs. Generator choice (NSwag / openapi-typescript / Kiota / Aspire-native) depends on API conventions not yet settled.
+**Context:** DiTracker ships a handwritten shared TS contracts folder; it drifts from C# DTOs. Faktuboh goal: auto-generate TS from C# DTOs. Generator choice (NSwag / openapi-typescript / Kiota / Aspire-native) depends on API conventions not yet settled.
 
 **Options considered:**
 - **A.** Pick a generator now (e.g., NSwag) and commit.
@@ -561,7 +561,7 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Status:** Accepted · **upstream of ADR-003** · makes explicit the decision implicit in §3.3 and §3.7
 
-**Context:** Accountantim's regulatory surface is volatile — bilingual MENA + EU, fintech, hostile public-statement path (Step 2.7 R#2), audit-integrity invariant (Step 2.7 R#5). Features may need to be carved out, reshaped, or scoped down atomically in response to regulator action without cascading refactors. ADR-004 pins `ProcessingActivity` as ambient context *set at the slice boundary*, which presupposes that "the slice" is a real unit of code, not a convention spanning layers. This decision was surfaced by a 5 Whys deep dive on ADR-003: the spike's urgency only makes sense because endpoint-framework choice is deeply coupled to slice shape, and that coupling only exists because we're committed to vertical-slice. Leaving this implicit would let a future reviewer reasonably ask "why not layered?" without a written answer.
+**Context:** Faktuboh's regulatory surface is volatile — bilingual MENA + EU, fintech, hostile public-statement path (Step 2.7 R#2), audit-integrity invariant (Step 2.7 R#5). Features may need to be carved out, reshaped, or scoped down atomically in response to regulator action without cascading refactors. ADR-004 pins `ProcessingActivity` as ambient context *set at the slice boundary*, which presupposes that "the slice" is a real unit of code, not a convention spanning layers. This decision was surfaced by a 5 Whys deep dive on ADR-003: the spike's urgency only makes sense because endpoint-framework choice is deeply coupled to slice shape, and that coupling only exists because we're committed to vertical-slice. Leaving this implicit would let a future reviewer reasonably ask "why not layered?" without a written answer.
 
 **Options considered:**
 - **A.** Layered architecture — thin Controllers over Application services, shared pipeline for auth/validation. HTTP framework is near-disposable; features distributed across horizontal layers.
@@ -574,7 +574,7 @@ The five decisions introduced as narrative framing in §3.1 are recorded here as
 
 **Reversibility:** Vertical-slice → layered = multi-sprint cultural rewrite per feature slice (every endpoint's test factory, DI, auth, and ambient-context setup moves to a different home). Layered → vertical-slice = roughly symmetric cost. This is the upstream decision that makes ADR-003 load-bearing; reversing ADR-006 would make ADR-003 unnecessary — but also surrender the volatility-response property that motivates ADR-004.
 
-**Load-bearing assumption this ADR rests on:** *Accountantim's regulatory surface is volatile enough that feature-level deletability / carve-out-ability is a first-class architectural property, not a nice-to-have.* If a future reviewer successfully argues the surface is stable, ADR-006 weakens and a simpler layered architecture becomes defensible — which in turn retires ADR-003.
+**Load-bearing assumption this ADR rests on:** *Faktuboh's regulatory surface is volatile enough that feature-level deletability / carve-out-ability is a first-class architectural property, not a nice-to-have.* If a future reviewer successfully argues the surface is stable, ADR-006 weakens and a simpler layered architecture becomes defensible — which in turn retires ADR-003.
 
 **NFR / Risk links:** Step 2.7 R#5 audit immutability, ADR-004 compliance posture, bilingual MENA + EU regulatory scope, hostile public-statement surface (R#2 carve-out pressure).
 
@@ -616,7 +616,7 @@ This step records 20 decisions facilitated collaboratively (D4.1–D4.20) across
 ### 4.1 Decision Priority Analysis
 
 **Critical (block implementation — must hold before first feature slice merges):**
-D4.1 (Postgres) · D4.5 (Keycloak) · D4.6 (capability token + CDN-cached opaque tokens) · D4.8 (envelope encryption posture) · D4.9 (RFC 9457 + domain code taxonomy) · D4.11 (Idempotency-Key + natural-key backstop) · D4.16 (ACA hosting) · D4.18 (Frankfurt region).
+D4.1 (Postgres + app-level bitemporal per ADR-022) · D4.5 (Auth0 per ADR-021) · D4.6 (capability token + CDN-cached opaque tokens) · D4.8 (envelope encryption posture — Key Vault Standard per ADR-025) · D4.9 (RFC 9457 + domain code taxonomy) · D4.11 (Idempotency-Key + natural-key backstop) · D4.16 (ACA hosting) · D4.18 (Frankfurt region).
 
 **Important (shape architecture — must hold before component design closes):**
 D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D4.7 (app-level rate limiting) · D4.10 (URL-path versioning) · D4.12 (Wolverine Postgres transport) · D4.13 (signals + plain services + rxResource) · D4.14 (Signal Forms + FormMutationConfig) · D4.17 (GitHub Actions + azd + OIDC) · D4.19 (AFD Standard + SWA) · D4.20 (App Insights + sampling).
@@ -635,11 +635,24 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 **Decision:** PostgreSQL 16+ via Azure Database for PostgreSQL Flexible Server in Germany West Central. Single primary with zone-redundant HA at production tier.
 
-**Rationale:** Bitemporal storage (per Step 3 §3.5) maps cleanly to Postgres's `tstzrange` + trigger-based system_period pattern via the well-trodden `temporal_tables` extension. EF Core 10 has first-class Npgsql provider support. Cost curve for B2C is materially lower than Azure SQL Hyperscale at the same scale envelope. JSONB and partial-index support make audit-log queries and quasi-identifier policy enforcement (per §2.9) ergonomic.
+**Rationale:** EF Core 10 has first-class Npgsql provider support. Cost curve for B2C is materially lower than Azure SQL Hyperscale at the same scale envelope. JSONB and partial-index support make audit-log queries and quasi-identifier policy enforcement (per §2.9) ergonomic.
 
-**Reversibility:** **One-way door after first feature slice commits.** Bitemporal trigger code, EF migrations, and operational runbooks are provider-specific.
+**Bitemporal implementation** (per [ADR-022](./adrs/adr-022-application-level-bitemporal.md)): Azure Flexible Server does **not** permit the `temporal_tables` extension, so bitemporal storage is implemented at the **application layer** via an EF Core `SaveChanges` interceptor writing to per-entity `<entity>_history` tables. Entities opt in via the `IBitemporal` marker interface:
 
-**NFR / Risk links:** R#1 (arithmetic correctness — typed columns), R#5 (audit immutability — trigger-enforced append-only), R#6 (concurrency — `SERIALIZABLE` available + advisory locks), Step 2.6 cross-cutting concern #1 (bitemporal).
+```csharp
+public interface IBitemporal
+{
+    DateTimeOffset ValidFrom { get; set; }
+    DateTimeOffset? ValidTo { get; set; }
+    DateTimeOffset RecordedAt { get; set; }
+}
+```
+
+The interceptor copies pre-mutation row state to `<entity>_history` on every UPDATE / DELETE and stamps `RecordedAt`. An `AsOf(DateTimeOffset)` query extension returns the entity view at any wall-clock. A **CI-wired fitness test** ("audit round-trip") asserts that every `IBitemporal` entity produces exactly one history row per mutation. The interceptor must be registered on every `DbContext`; a unit test asserts this on boot.
+
+**Reversibility:** **One-way door after first feature slice commits** for the DB engine choice. The bitemporal *mechanism* is re-litigable (per ADR-022) — swap the interceptor for a native temporal feature if we move to a store that supports one (RT-BITEMP-1).
+
+**NFR / Risk links:** R#1 (arithmetic correctness — typed columns), R#5 (audit immutability — interceptor-enforced history), R#6 (concurrency — `SERIALIZABLE` available + advisory locks), Step 2.6 cross-cutting concern #1 (bitemporal).
 
 #### D4.2 — Caching Layer: **CDN-only, no Redis**
 
@@ -651,7 +664,7 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 **Revisit trigger:** if Postgres CPU exceeds 60% sustained on read-heavy workloads AND profiling shows cache-eligible query patterns, evaluate Azure Cache for Redis Standard tier.
 
-**NFR / Risk links:** R#2 (public surface 80/500 rps — solved at AFD), Step 3 §3.4 cache-key registry constraint.
+**NFR / Risk links:** R#2 (public surface 83 rps sustained SLO + 500 rps cache-sizing posture — both absorbed at AFD edge), Step 3 §3.4 cache-key registry constraint.
 
 #### D4.3 — Migration Tooling: **EF Core migrations + idempotent trigger installer (Aspire MigrationService)**
 
@@ -677,24 +690,25 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 ### 4.3 Authentication & Security (D4.5–D4.8)
 
-#### D4.5 — Identity Provider: **Keycloak (self-host) on Azure Container Apps**
+#### D4.5 — Identity Provider: **Auth0 free tier (EU tenant, custom domain `auth.faktuboh.com`)** — supersedes Keycloak self-host
 
-**Decision:** Keycloak self-hosted on Azure Container Apps (D4.16), single realm `accountantim` with multiple identity providers (Google, Apple, phone-OTP via custom SPI, email+password). Themed per locale via Keycloak theme customization.
+**Decision** (per [ADR-021](./adrs/adr-021-auth0-identity-provider.md)): Auth0 free tier (7,500 MAU, unlimited logins) as Faktuboh's MVP identity provider. EU tenant region for GDPR data residency. **Custom domain `auth.faktuboh.com`** via Auth0 Custom Domains — hosted login and all callback URLs / token audiences / CORS origins registered against this host from day one. MFA enabled. Password reset flow delegated to Auth0. Magic-link (FR42) delivered via **Auth0 Passwordless**. OIDC integration via `Microsoft.AspNetCore.Authentication.OpenIdConnect`. Custom claims (tenant, `ProcessingActivity` hints) populated via Auth0 Actions.
 
-**Rationale:** Trades operational weight (patching, SPI maintenance, theme work) for cost predictability and vendor independence — the cost curve of Entra External ID and Auth0 tilts steeply against B2C growth, with per-MAU pricing ceilings that constrain product decisions. Keycloak flips the curve: high fixed cost at launch, near-zero marginal cost at scale. For a fintech expecting growth, this is the defensible long-term shape. Compliance posture stays inside our Frankfurt perimeter.
+**Rationale:** Self-hosted Keycloak on scale-to-zero ACA had a 20–40 s JVM cold-start that violated NFR-P1 (`/public-statement` LCP <2.5 s on Slow 4G) and degraded the login flow. Auth0 is a managed edge service — no cold-start. At MVP volume the free tier covers OIDC, MFA, password reset, and passwordless, so the vendor-independence argument that originally drove Keycloak selection does not pay off inside the MVP + beta window (B2C MAU will not cross 7,500). The Keycloak path also required a Day 0 deployability spike that the solo-dev schedule (Day 35 dogfood) could not absorb if it failed.
 
 **Hard cascading commitments:**
-- **Dedicated Keycloak Postgres database** on the shared Flexible Server instance (separate DB, not separate server) — for blast-radius and erasure-transactionality.
-- **SMS OTP delivery via custom SPI** integrating Azure Communication Services (preferred MENA reach) or Twilio fallback.
-- **Realm signing keys backed by Azure Key Vault** via the Keycloak Vault SPI / community extension — pins rotation into D4.8.
-- **Erasure flow:** owner request → LegalHold check → Keycloak Admin API user delete → `SubjectKeyDestroyed` domain event → key-shred → audit trail preserved.
-- **Patching commitment:** monthly Keycloak patch window with automated upgrade tests in CI.
+- **DNS setup at tenant provisioning:** CNAME + TXT records for `auth.faktuboh.com` (Auth0 Custom Domains). Changing callback URLs / audiences post-launch invalidates issued tokens — they are part of the deployment checklist.
+- **Erasure flow:** owner request → LegalHold check → Auth0 Management API user delete → `SubjectKeyDestroyed` domain event → key-shred → audit trail preserved.
+- **No Keycloak ops surface:** no dedicated Keycloak Postgres DB, no SMS OTP SPI, no Vault SPI, no monthly patch window. ACA container slot reclaimed (~€15/mo per original cost table).
 
-**Reversibility:** **One-way door after first real users sign up.** Subject IDs live in Keycloak forever; migration requires permanent subject-ID mapping tables. Same reversibility class as ADR-002 / ADR-004 / ADR-006.
+**Reversibility:** **One-way door after first 100 real users sign up.** Subject IDs live in Auth0 forever; migration requires permanent subject-ID mapping tables.
 
-**Recommended pre-scaffold spike (mirror of §3.7):** one-day Keycloak deployability spike on Aspire 13 + ACA, exercising single-realm + multi-provider + Vault SPI + SMS SPI seams. Outcome documented in `.spike/keycloak-aspire-smoke/DECISION.md`. Surface as **§3.9** when it lands.
+**Revisit triggers** (from ADR-021):
+- **RT-AUTH-1:** MAU crosses 5,000 (approaching 7,500 cap) — evaluate Auth0 Essentials pricing vs re-hosting.
+- **RT-AUTH-2:** Auth0 Essentials pricing at projected 12-month MAU exceeds €25/month — same action.
+- **RT-AUTH-3:** Regulatory requirement for EU-resident control plane (not just data plane) — migrate to self-host.
 
-**NFR / Risk links:** R#2 (public-statement is unauthenticated — Keycloak protects only owner workspace), R#3 (GDPR erasure flow integrates via Admin API), Step 2.9 adversarial baseline.
+**NFR / Risk links:** NFR-P1 (LCP budget — this decision restores compliance), R#2 (public-statement is unauthenticated — Auth0 protects only owner workspace), R#3 (GDPR erasure flow integrates via Management API), Step 2.9 adversarial baseline.
 
 #### D4.6 — Public-Statement Token Scheme: **Capability token (opaque server-side + CDN cache + URL-rotation invalidation)**
 
@@ -713,7 +727,7 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 #### D4.7 — Rate-Limiting Topology: **App-level only at MVP** (with explicit reversal trigger to add WAF rate limiting)
 
-**Decision:** `Microsoft.AspNetCore.RateLimiting` middleware in the API. Two policies: `public-token` (per-token + per-IP-hash bucket, matching the 80/500 rps envelope) and `owner-api` (per-authenticated-user). No WAF-tier rate limiting at MVP — AFD Standard's WAF managed ruleset blocks malformed requests but rate limiting is handled in-process.
+**Decision:** `Microsoft.AspNetCore.RateLimiting` middleware in the API. Two policies: `public-token` (per-token + per-IP-hash bucket, sized against D4.6's 500 rps cache-sizing posture so that legitimate WhatsApp-share bursts pass through while probes get throttled — not sized against the 83 rps SLO, which is a server-wide claim) and `owner-api` (per-authenticated-user). No WAF-tier rate limiting at MVP — AFD Standard's WAF managed ruleset blocks malformed requests but rate limiting is handled in-process.
 
 **Rationale:** App-level gives us per-token granularity that WAF rules cannot (WAF doesn't know what a "token" is). At MVP traffic, the cost of a 429 returned in-process is negligible compared to the operational simplicity of one rate-limit codebase.
 
@@ -723,21 +737,28 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 **NFR / Risk links:** R#2 (burst envelope), Step 2.9 adversarial baseline (two-layer rate limiting noted as ideal, deferred to revisit trigger).
 
-#### D4.8 — Secret / Key Custody: **Envelope encryption (Vault master KEK + per-subject DEK + per-row IV)**
+#### D4.8 — Secret / Key Custody: **Envelope encryption (Key Vault Standard KEK + per-subject DEK + per-row IV)**
 
 **Decision:** Two-tier envelope encryption per ADR-004's key-shred posture:
-- **Master KEK** held in Azure Key Vault Premium (Managed HSM-backed) in Germany West Central. Annual rotation + on-demand. Never leaves Vault.
+- **Master KEK** held in **Azure Key Vault Standard** (software-protected, FIPS 140-2 Level 1 — per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md)) in Germany West Central. **Quarterly** rotation + on-demand. Never leaves Vault. DEKs are wrapped via the Key Vault crypto API.
 - **Per-subject DEK** generated on user creation, encrypted with the master KEK, stored in the `subject_keys` Postgres table. Decrypted in-memory only when needed for write/read of that subject's PII.
 - **Per-row IV** (initialization vector) generated per encrypted row, stored alongside the ciphertext column.
 
+**Rationale for Standard (not Premium HSM):** Premium HSM at ~€3.30/key/mo breached the declared €0/month burn tolerance. FIPS 140-2 Level 1 is appropriate for pre-GA fintech software; Level 3 (HSM) is compliance theater until an enterprise RFP requires it. The envelope scheme is **tier-agnostic** — only the KEK's backing store changes on upgrade. Compliance posture documented as: *"FIPS 140-2 Level 1, upgradeable to Level 3 via Key Vault Premium without schema or code change."*
+
 **Hard cascading commitments:**
-- **Vault separation per environment** (dev / staging / prod), plus a **dedicated Vault for Keycloak** signing keys (per D4.5).
-- **Standard tier Vault** for non-crypto secrets (connection strings, API keys, OIDC client secrets).
+- **Vault separation per environment** (dev / staging / prod). No separate Keycloak Vault (Keycloak removed per ADR-021).
+- **Same Vault holds non-crypto secrets** (connection strings, API keys, OIDC client secrets, `RESEND_API_KEY`) — Standard tier is sufficient for both roles.
 - **All access via Managed Identity** — no service principal secrets stored anywhere.
 - **Erasure = destroy the subject's DEK row** in `subject_keys`. Ciphertext remains, becomes irrecoverable. Audit math (totals, balances) preserved because the erased data was PII columns, not amount columns.
 - **KEK rotation procedure:** generate new KEK version, re-wrap all DEKs with new KEK, mark old KEK version as decryption-only, decommission after grace period.
 
-**Reversibility:** **One-way door after first encrypted row.** Switching encryption schemes requires re-encryption migration of every encrypted column.
+**Reversibility:** **One-way door after first encrypted row** for the envelope *scheme*. The Vault *tier* is re-litigable — upgrade to Premium without schema or code change (RT-KMS-1/2/3 in ADR-025).
+
+**Revisit triggers** (from ADR-025):
+- **RT-KMS-1:** First enterprise customer RFP specifies HSM-backed keys (FIPS 140-2 Level 3+). Action: upgrade to Key Vault Premium.
+- **RT-KMS-2:** Regulatory regime in a target market changes to mandate HSM.
+- **RT-KMS-3:** Threat model updates to include adversaries capable of extracting software-protected keys from Azure's infrastructure (nation-state level).
 
 **NFR / Risk links:** ADR-004 (compliance posture), R#3 (GDPR erasure vs audit integrity), Step 2.9 data-lifecycle hardening.
 
@@ -747,8 +768,8 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 **Decision:** RFC 9457 (`application/problem+json`) as the wire format for all error responses. Every error carries:
 - Standard fields: `type`, `title`, `status`, `detail`, `instance`.
-- Extensions: `traceId` (W3C trace context — drives D4.20 correlation), `code` (domain code in the form `accountantim.<slice>.<condition>`, e.g., `accountantim.statements.token_revoked`), `errors[]` (RFC 9457 array of per-field violations with JSON Pointers, drives D4.14 server-error mapping).
-- A central `ErrorCatalog` registry in `src/Accountantim.Application/Errors/` maps every domain code to its `type` URI, default `title`, HTTP status, and Transloco translation key. **NetArchTest enforces** that every `throw DomainException` references a code that exists in `ErrorCatalog` (compile-time-equivalent guarantee).
+- Extensions: `traceId` (W3C trace context — drives D4.20 correlation), `code` (domain code in the form `faktuboh.<slice>.<condition>`, e.g., `faktuboh.statements.token_revoked`), `errors[]` (RFC 9457 array of per-field violations with JSON Pointers, drives D4.14 server-error mapping).
+- A central `ErrorCatalog` registry in `src/Faktuboh.Application/Errors/` maps every domain code to its `type` URI, default `title`, HTTP status, and Transloco translation key. **NetArchTest enforces** that every `throw DomainException` references a code that exists in `ErrorCatalog` (compile-time-equivalent guarantee).
 
 **Pre-mortem & first-principles amendments folded in:**
 - **`AsyncOperationFailed` event seam** reserved on the bus for failures that occur outside the synchronous request-response path (e.g., outbox handler failures). Notification surfaces in a `NotificationInbox` aggregate the user can read on next session.
@@ -797,15 +818,23 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 ### 4.5 Frontend Architecture (D4.13–D4.15)
 
-#### D4.13 — State Management: **Signals + plain services + Angular `rxResource()` / `resource()`**
+#### D4.13 — State Management: **Signals + plain services + Angular `rxResource()` / `resource()`** (Signal Store as explicit escape hatch)
 
-**Decision:** No state library. Cross-cutting state lives in signal services (`CurrentUserService`, `LocaleService`, `NotificationService`, `CapabilityTokenService`). Per-feature state via Angular's built-in `rxResource()` and `resource()` primitives. `libs/core` owns shared state; feature folders own their own.
+**Decision:** Default to Angular's native primitives — no global state library. Cross-cutting state lives in signal services (`CurrentUserService`, `LocaleService`, `NotificationService`, `CapabilityTokenService`). Per-feature state via Angular's built-in `rxResource()` and `resource()` primitives. `libs/core` owns shared state; feature folders own their own.
+
+**Escape hatch — NgRx Signal Store, permitted per slice under explicit conditions:** A slice MAY adopt Signal Store when any of:
+- **(a)** derived state must span ≥2 feature slices (e.g., a cross-slice balance view that aggregates `statements` + `debts`),
+- **(b)** pagination with stale-while-revalidate semantics exceeds what `rxResource()` expresses naturally,
+- **(c)** optimistic-update flows require entity-collection patching that would re-implement Signal Store's `withEntities` helpers in bespoke code.
+
+A slice adopting Signal Store must document the triggering condition in its slice README; the ESLint boundary rule still forbids cross-slice imports of the store.
 
 **Hard cascading commitments:**
 - **ESLint boundary rule** blocks **all cross-feature imports** except from `libs/*` (mirrors backend NetArchTest intent — closes the loophole where non-state code bypasses the boundary).
-- **Sharpened revisit trigger** (Winston + Amelia convergence from Party Mode): first feature requiring derived state spanning ≥2 slices, OR pagination with stale-while-revalidate needs.
+- **Signal Store is signal-native** — the zoneless invariant (Step 2.2) is preserved when the escape hatch is exercised.
+- **No TanStack Query** — overlaps with `rxResource()` and adds a second caching axis. Re-litigable if `rxResource()` proves insufficient (revisit trigger only, not an escape hatch).
 
-**Reversibility:** Re-litigable per slice. Adding NgRx Signal Store or TanStack Query is additive, not replacement.
+**Reversibility:** Re-litigable per slice. The escape hatch is additive (one slice may use Signal Store while others remain on plain services), so no coordinated rewrite is required.
 
 **NFR / Risk links:** Step 2.2 (zoneless invariant — signal-native primitives only), Step 3 §3.4 (compile-boundary separation).
 
@@ -847,7 +876,7 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 #### D4.16 — Backend Hosting: **Azure Container Apps (ACA)**
 
-**Decision:** ACA in Germany West Central. Aspire 13 deploy target via `azd`. Production: `minReplicas=1` (avoids cold-start on first MENA-morning request). Staging / dev: `minReplicas=0` (true scale-to-zero). KEDA HTTP scaler tuned to D4.6's 80rps sustained / 500rps burst envelope (cache-miss traffic only).
+**Decision:** ACA in Germany West Central. Aspire 13 deploy target via `azd`. Production: `minReplicas=1` (avoids cold-start on first MENA-morning request). Staging / dev: `minReplicas=0` (true scale-to-zero). KEDA HTTP scaler tuned against D4.6's **83 rps sustained SLO** plus headroom on cache-miss traffic only. The 500 rps cache-sizing posture is absorbed at AFD edge — it does not drive autoscale.
 
 **Cascading commitments:**
 - **Container image strategy:** build once, promote staging → prod via ACA revision (no rebuild per environment).
@@ -880,16 +909,16 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 #### D4.18 — Region: **Germany West Central (Frankfurt)**
 
-**Decision:** Germany West Central as primary region. Paired with Germany North for in-country DR. All Azure resources (ACA, Postgres Flexible Server, Key Vault Premium HSM, AFD origin, SWA, App Insights) in this region.
+**Decision:** Germany West Central as primary region. Paired with Germany North for in-country DR. All Azure resources (ACA, Postgres Flexible Server, Key Vault Standard, AFD origin, SWA, App Insights) in this region.
 
-**Rationale:** Strongest GDPR/data-residency narrative for fintech marketing; mature region with full service parity including Managed HSM (load-bearing for D4.8); paired with Germany North so geo-redundant Postgres replicas would stay in-country. AFD edge layer (D4.19) eats the 15-25ms latency gap to MENA users for cache-hit traffic.
+**Rationale:** Strongest GDPR/data-residency narrative for fintech marketing; mature region with full service parity for every MVP resource (ACA, Postgres Flexible Server, Key Vault Standard, AFD, SWA, App Insights); paired with Germany North so geo-redundant Postgres replicas would stay in-country. AFD edge layer (D4.19) eats the 15-25ms latency gap to MENA users for cache-hit traffic. HSM-tier Key Vault is deferred per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md), so region choice is no longer constrained by Managed HSM parity — any EU region with Postgres Flexible Server + ACA + Key Vault Standard is a valid future target.
 
-**Reversibility:** **High cost — treat as one-way door unless caught pre-launch.** Postgres migration (logical replication + cutover), ACA rebuild, Key Vault re-key ceremony, CDN origin reconfiguration, DNS — call it 1-2 engineer-weeks.
+**Reversibility:** **High cost — treat as one-way door unless caught pre-launch.** Postgres migration (logical replication + cutover), ACA rebuild, Key Vault re-key ceremony (Standard-tier KEK re-wrap), CDN origin reconfiguration, DNS — call it 1-2 engineer-weeks.
 
 **Revisit triggers (three):**
 - Real-user-monitoring shows p75 Cairo/Dubai TTI >2.5s AND the dominant factor is origin latency (not bundle, not backend) → migrate to Italy North (Milan).
-- Managed HSM in Germany West Central is deprecated or hits service-parity blockers → migrate to North Europe or France Central.
-- UAE Azure regions (UAE North = Dubai) gain full service parity including Premium HSM AND product pivots to MENA-primary → consider multi-region active-passive with UAE as MENA origin.
+- Germany West Central loses Postgres Flexible Server or ACA service parity → migrate to North Europe or France Central. (Managed-HSM parity no longer applies — see ADR-025.)
+- UAE Azure regions (UAE North = Dubai) gain full service parity AND product pivots to MENA-primary → consider multi-region active-passive with UAE as MENA origin. If an enterprise RFP later forces a Key Vault Premium upgrade, the Premium tier is available in every region Standard is; this trigger fires on service-parity grounds, not on HSM grounds.
 
 **NFR / Risk links:** Step 1 (Azure Europe hard constraint), Step 2.9 (data-lifecycle hardening — region affects data residency), R#3 (compliance perimeter).
 
@@ -899,15 +928,15 @@ D4.2 (no Redis) · D4.3 (EF Core migrations + idempotent trigger installer) · D
 
 **Topology:**
 ```
-app.accountantim.com           → AFD Standard → SWA (owner-workspace root)
-app.accountantim.com/api/*     → AFD Standard → ACA backend (no cache; auth-sensitive)
-statement.accountantim.com     → AFD Standard → SWA (public-statement root)
-statement.accountantim.com/t/{token}  → AFD Standard (cached per-token) → ACA backend on miss
+app.faktuboh.com           → AFD Standard → SWA (owner-workspace root)
+app.faktuboh.com/api/*     → AFD Standard → ACA backend (no cache; auth-sensitive)
+statement.faktuboh.com     → AFD Standard → SWA (public-statement root)
+statement.faktuboh.com/t/{token}  → AFD Standard (cached per-token) → ACA backend on miss
 ```
 
 **WAF rules at Standard tier from day one:**
 - OWASP core ruleset (SQLi, XSS, LFI/RFI, command injection).
-- Rate-limit per client IP: **120 req/min on `app.*` paths**, **600 req/min on `statement.*/t/*`** (matches D4.6 burst ceiling + headroom).
+- Rate-limit per client IP: **120 req/min on `app.*` paths**, **600 req/min on `statement.*/t/*`** (sized against D4.6's 500 rps cache-sizing posture with per-IP headroom for legitimate WhatsApp-share bursts).
 - Geo rule: **log-only initially**; promote to allow/block when market data exists. MENA + EU monitored.
 - Block requests missing expected headers on API routes (e.g., `Idempotency-Key` on POSTs to money-mutation endpoints).
 - Custom rule: block paths matching capability-token probe shapes (`/t/[<6 chars]` or obviously malformed).
@@ -973,9 +1002,9 @@ Backend middleware sets `traceId` in Problem Details from `Activity.Current?.Tra
 
 The decisions admit a partial order driven by reversibility and dependency. Suggested build sequence:
 
-1. **Region + Vault (D4.18, D4.8 Vault provisioning)** — provision Frankfurt resources, Vault Premium with HSM, Vault Standard for non-crypto secrets. One-way doors land first.
-2. **Database (D4.1, D4.3)** — Postgres Flexible Server, EF Core migrations + idempotent trigger installer (Aspire MigrationService). Bitemporal triggers verified.
-3. **Identity (D4.5)** — Keycloak deployment spike, single-realm setup, Vault SPI for signing keys, SMS SPI for MENA OTP. One-way door — gate behind the spike.
+1. **Region + Vault (D4.18, D4.8 Vault provisioning)** — provision Frankfurt resources, **Key Vault Standard** for KEK + non-crypto secrets (per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md)). One-way doors land first.
+2. **Database (D4.1, D4.3)** — Postgres Flexible Server, EF Core migrations + idempotent bitemporal interceptor (Aspire MigrationService). `IBitemporal` interceptor wired into every `DbContext`; history-table round-trip fitness test passes before any aggregate ships (per [ADR-022](./adrs/adr-022-application-level-bitemporal.md)).
+3. **Identity (D4.5)** — **Auth0 tenant provisioning** (per [ADR-021](./adrs/adr-021-auth0-identity-provider.md)): EU tenant, custom domain `auth.faktuboh.com` (CNAME + TXT records), callback URL / audience / CORS registration, Auth0 Actions for tenant + `ProcessingActivity` claims, Passwordless connection for magic-link flows. One-way door — custom-domain certificate provisioning and issued-token scope cannot be re-homed later without invalidating all tokens.
 4. **Hosting + CI/CD (D4.16, D4.17)** — ACA environment, GitHub Actions workflows with OIDC, build-once promotion pipeline.
 5. **CDN + WAF + Static FE (D4.19)** — AFD Standard profile, SWA for both FE apps, WAF ruleset, cache strategy with CI gate.
 6. **API contract (D4.9, D4.10, D4.11)** — error model + `ErrorCatalog`, `/v1/` routing, idempotency middleware. First slice can compile against these.
@@ -991,7 +1020,7 @@ Steps 1–3 must complete before step 6 can produce a working API. Steps 6–9 c
 
 | Dependency | Source | Sink | Nature |
 |---|---|---|---|
-| Bitemporal triggers | D4.3 (migrations) | D4.1 (Postgres-only constructs) | Hard — engine swap rebuilds triggers |
+| Bitemporal interceptor + `*_history` tables | D4.3 (migrations) | D4.1 (`IBitemporal` marker interface) | Soft — application-layer (ADR-022); history-table schema migrates like any other EF Core migration |
 | `traceId` correlation | D4.9 (error model) | D4.20 (App Insights query) | Hard — both must agree on W3C traceparent |
 | `Idempotency-Key` lifecycle | D4.11 (middleware) | D4.14 (`FormMutationConfig`) | Hard — front-end seam consumes back-end contract |
 | `errors[]` JSON Pointer walk | D4.9 (response shape) | D4.14 (`applyServerErrors`) | Hard — pointer format must match |
@@ -999,7 +1028,7 @@ Steps 1–3 must complete before step 6 can produce a working API. Steps 6–9 c
 | Subject key destruction propagation | D4.8 (envelope encryption) | D4.6 (token invalidation) | Hard — `SubjectKeyDestroyed` event invalidates tokens |
 | `ProcessingActivity` ambient | Step 3 §3.5 | D4.20 (logged property), D4.9 (trace context), D4.12 (message header) | Hard — ambient context propagates through every layer |
 | Cache-Control headers | D4.6 (backend) | D4.19 (CI gate asserts) | Soft — backend owns TTL, edge obeys, CI catches drift |
-| Keycloak realm + Vault SPI | D4.5 (realm signing keys) | D4.8 (Vault custody) | Hard — realm keys live in Vault via SPI |
+| Auth0 tenant + custom domain | D4.5 (hosted login at `auth.faktuboh.com`) | D4.19 (AFD / DNS routing) | Hard — changing custom domain invalidates all issued tokens; CNAME + TXT records and cert provisioning live at tenant setup |
 | OIDC federated credential | D4.17 (GitHub Actions) | D4.16 (ACA deploy) | Hard — deploy workflow needs Entra workload identity |
 
 #### Reversibility Map
@@ -1028,7 +1057,7 @@ A single source of truth for all revisit conditions surfaced during Step 4. Oper
 | LCP regression on MENA mobile OR market signups blocked on "no offline" OR retention penalty traceable to no installable shell | D4.15 | Reopen PWA scope |
 | First external API consumer | D4.10 | Add `Sunset` headers, formalize public versioning policy |
 | RUM p75 Cairo/Dubai TTI >2.5s AND origin latency dominant | D4.18 | Migrate to Italy North |
-| Managed HSM deprecation in Germany West Central OR service parity blocker | D4.18 | Migrate to North Europe or France Central |
+| Germany West Central loses Postgres Flexible Server or ACA service parity | D4.18 | Migrate to North Europe or France Central (Managed-HSM trigger removed per ADR-025) |
 | UAE North service parity + MENA-primary product pivot | D4.18 | Consider multi-region active-passive |
 | RUM p75 MENA TTFB >500ms on cache-hit AND bundle/backend ruled out | D4.19 | Consider Cloudflare in front of AFD |
 | Multi-policy WAF need (per-route policies diverge) | D4.19 | Upgrade AFD Standard → Premium |
@@ -1042,20 +1071,22 @@ A single source of truth for all revisit conditions surfaced during Step 4. Oper
 
 Rough estimate at single-tenant MVP traffic:
 
-| Resource | Tier | Approx. monthly cost (USD) |
-|---|---|---|
-| ACA backend (`minReplicas=1` prod) | Consumption | ~$30 |
-| Postgres Flexible Server | B1ms / Burstable | ~$30 |
-| Azure Front Door | Standard | ~$35 |
-| Azure Static Web Apps | Standard | ~$9 |
-| Application Insights (with sampling) | Pay-as-you-go | ~$25 |
-| Key Vault Premium (HSM-backed KEK) | Premium | ~$5 |
-| Key Vault Standard (secrets) | Standard | ~$1 |
-| Keycloak ACA workload (`minReplicas=1`) | Consumption | ~$15 |
-| Storage (audit log archive, backups) | Cool/Archive | ~$3 |
-| **Total** | | **~$150 / month** |
+Rough estimate at single-tenant MVP traffic, reflecting post-adversarial-review revisions (ADRs 021 + 023 + 025):
 
-Two cost-revisit triggers fire well below catastrophic levels: the App Insights $75/mo trigger gives early warning on telemetry sprawl; the $200 total-spend trigger from D4.16 catches accidental autoscale events.
+| Resource | Tier | Approx. monthly cost (USD) | Notes |
+|---|---|---|---|
+| ACA backend (`minReplicas=1` prod) | Consumption | ~$30 | |
+| Postgres Flexible Server | B1ms / Burstable | ~$30 | |
+| Azure Front Door | Standard | ~$35 | |
+| Azure Static Web Apps | Standard | ~$9 | |
+| Application Insights (with sampling) | Pay-as-you-go | ~$25 | |
+| **Key Vault Standard (KEK + secrets)** | Standard | ~$1 | Per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md) — Premium HSM deferred. |
+| **Auth0 (IdP, EU tenant, custom domain)** | Free (to 7,500 MAU) | ~$0 | Per [ADR-021](./adrs/adr-021-auth0-identity-provider.md) — replaces Keycloak ACA workload. |
+| **Resend (transactional email, `eu-west-1`)** | Free (to 3,000 emails/mo) | ~$0 | Per [ADR-023](./adrs/adr-023-resend-transactional-email.md). |
+| Storage (audit log archive, backups) | Cool/Archive | ~$3 | |
+| **Total** | | **~$133 / month** | Down ~$17/mo from the pre-review estimate (reclaimed: Keycloak ACA ~$15, Vault Premium ~$5, minus retained Standard ~$1, minus net-new Auth0 $0). |
+
+Two cost-revisit triggers fire well below catastrophic levels: the App Insights $75/mo trigger gives early warning on telemetry sprawl; the $200 total-spend trigger from D4.16 catches accidental autoscale events. Two new triggers from the revised stack: **RT-AUTH-1/2** (Auth0 MAU or pricing) and **RT-EMAIL-1** (Resend volume).
 
 ### 4.9 Three Silent-Decay SLOs to Instrument From Day One
 
@@ -1076,7 +1107,7 @@ Step 4 produced four decisions whose reversibility class and downstream blast ra
 
 - **ADR-007 — Capability-token pattern for public-statement** (D4.6): codifies the URL-as-capability semantics, the constant-time-response invariant, and the AFD-cache-key contract.
 - **ADR-008 — Envelope encryption posture** (D4.8): formalizes the KEK/DEK/IV hierarchy and the erasure flow that operationalizes ADR-004.
-- **ADR-009 — Keycloak self-host on ACA** (D4.5): captures the cost-curve trade and the SPI commitments (Vault, SMS, theme).
+- **ADR-009 — Keycloak self-host on ACA** (D4.5): **SUPERSEDED (2026-04-21) by [ADR-021](./adrs/adr-021-auth0-identity-provider.md).** Retained for historical context on the cost-curve trade and SPI commitments; identity is now Auth0 free tier on custom domain `auth.faktuboh.com`.
 - **ADR-010 — Region as one-way door** (D4.18): records the latency-vs-residency value judgment and the three revisit triggers.
 
 These are not added now to keep Step 4 momentum; they belong in a post-Step-6 ADR consolidation pass.
@@ -1105,7 +1136,7 @@ Each convention entry follows the same shape:
 
 ### 5.2 Batch B1 — Backend Wire-Format Conventions
 
-Four of six conventions in this batch are **one-way doors past v1 launch**. External clients (including Accountantim's own Angular frontend, partner integrations, future generated TypeScript contracts) will pattern-match on these formats; changing them requires API versioning. The enforcement layer (§5.2.7) is non-negotiable — silent drift here is a category of bug we cannot ship.
+Four of six conventions in this batch are **one-way doors past v1 launch**. External clients (including Faktuboh's own Angular frontend, partner integrations, future generated TypeScript contracts) will pattern-match on these formats; changing them requires API versioning. The enforcement layer (§5.2.7) is non-negotiable — silent drift here is a category of bug we cannot ship.
 
 #### 5.2.1 Database Naming (P1)
 
@@ -1227,7 +1258,7 @@ The same policy is wired to Swashbuckle so the generated OpenAPI spec matches ru
 **Enforcement:**
 - Architecture test — fails build if any DTO or entity uses `DateTime`.
 - CI schema-audit — every column with `_at` suffix MUST be `timestamptz`; every `_date` suffix MUST be `date`.
-- Property-based test for statement boundaries — for every IANA timezone in Accountantim's supported list, generate transactions at minute offsets across month boundary and assert each lands in the correct period.
+- Property-based test for statement boundaries — for every IANA timezone in Faktuboh's supported list, generate transactions at minute offsets across month boundary and assert each lands in the correct period.
 - DST-window reconciliation test — assert no two transactions in the same minute when local clock duplicates an hour (October DST in EU; relevant for Lebanon/Jordan/Palestine in MENA).
 
 **Revisit triggers:**
@@ -1247,17 +1278,20 @@ The same policy is wired to Swashbuckle so the generated OpenAPI spec matches ru
 | `amount` field | JSON string (never JSON number); decimal-string with currency-appropriate precision |
 | `currency` field | ISO 4217 three-letter code, uppercase (`"EUR"`, `"AED"`, `"KWD"`, `"USD"`) |
 | C# domain type | `Money` value object — `record Money(decimal Amount, string Currency)` with constructor validation against `CurrencyRegistry` |
-| Postgres storage | `amount numeric(19, 4) not null, currency char(3) not null check (currency ~ '^[A-Z]{3}$')` |
+| Postgres storage (user-facing ledger) | `amount numeric(19, 4) not null, currency char(3) not null check (currency ~ '^[A-Z]{3}$')` — covers all supported fiat currencies (max 3 decimal places per ISO 4217) with 1-decimal headroom for rounding. |
+| Postgres storage (internal FX / rate pivots) | `rate numeric(28, 8) not null` — **dual-precision rule.** FX cross-rates, gold-base pivots, and per-second rate snapshots are computed via multiplication chains that lose precision at `(19, 4)`. Only the *source* rate tables and the DomainMath internal pivots use `(28, 8)`; outputs are always rounded back to the currency's ISO 4217 minor-unit count before user display or ledger write. |
 | Frontend math | MUST go through `libs/core/money` helpers (wraps `decimal.js`) — `addMoney(a, b)`, `formatMoney(m, locale)`, `parseMoney(input, currency)`. Raw `+`/`-`/`parseFloat` on amount values is ESLint-forbidden. |
 
 **`CurrencyRegistry`** is the single source of truth — currency code → minor units. Initial set: EUR (2), USD (2), GBP (2), AED (2), SAR (2), EGP (2), JOD (3), KWD (3), BHD (3), TND (3). All server-side validation runs through this registry.
+
+**Dual-precision rationale (R-10):** The PRD requires gold-base pricing with hourly rate feeds. An EUR-denominated debt, evaluated against a USD debtor payment at a different rate-lock timestamp, may cross three rate hops (EUR→XAU→USD or EUR→USD direct + historical snapshot comparison). Each hop at `(19, 4)` loses up to 5×10⁻⁵ EUR-equivalent per operation; chains of 3–4 hops can drift into the 4th decimal on amounts >10⁶ EUR. Keeping rate storage at `(28, 8)` and collapsing back to `(19, 4)` only at write-to-ledger time preserves the audit math invariant.
 
 **Rationale:** Money is a count of units of a currency. Three exactness requirements — unit count must be exact (excludes IEEE-754 floats), encode→decode→encode must round-trip, decoder must know precision. Decimal-string is self-describing for precision (count of digits after dot) and handles arbitrary scale natively. Stripe-style minor-units integers require every consumer to maintain a currency→minor-units table that breaks when ISO 4217 updates or when crypto adds new tokens; for a solo developer serving future bilingual partner integrations, decimal-string self-describes and removes the per-consumer-table maintenance burden. The frontend math disadvantage of decimal-string is mitigated by the mandatory `decimal.js` helper convention (see revisit trigger below).
 
 **Reversibility:** ★☆☆ — **one-way door**.
 
 **Enforcement:**
-- Architecture test — every Postgres column with `_amount` suffix MUST be `numeric(19, 4)`. CI gate.
+- Architecture test — every Postgres column with `_amount` suffix MUST be `numeric(19, 4)`; every column with `_rate` suffix MUST be `numeric(28, 8)` (dual-precision rule). CI gate.
 - Architecture test — every C# DTO money field MUST be `Money` value object type, never raw `decimal`.
 - ESLint rule (frontend) — `parseFloat`/`parseInt` on any field typed as `Money`/amount is a build error; raw arithmetic operators on `Money` field values are a build error.
 - Property-based round-trip test (FsCheck) — for every currency in `CurrencyRegistry`, generate random amounts at currency's max precision; assert serialize → deserialize → arithmetic → serialize is exact.
@@ -1269,15 +1303,15 @@ The same policy is wired to Swashbuckle so the generated OpenAPI spec matches ru
 
 #### 5.2.6 Domain Error Code Taxonomy (P7)
 
-**Convention:** Every error code in the `ErrorCatalog` registry (per D4.9) matches the structure `accountantim.<slice>.<condition>` with all segments in `snake_case`:
+**Convention:** Every error code in the `ErrorCatalog` registry (per D4.9) matches the structure `faktuboh.<slice>.<condition>` with all segments in `snake_case`:
 
 ```
-accountantim.journal_entry.duplicate_idempotency_key
-accountantim.journal_entry.unbalanced_debits_credits
-accountantim.account.insufficient_funds
-accountantim.user.email_already_registered
-accountantim.capability_token.expired
-accountantim.public_statement.not_found
+faktuboh.journal_entry.duplicate_idempotency_key
+faktuboh.journal_entry.unbalanced_debits_credits
+faktuboh.account.insufficient_funds
+faktuboh.user.email_already_registered
+faktuboh.capability_token.expired
+faktuboh.public_statement.not_found
 ```
 
 Each catalog entry has additional fields:
@@ -1291,7 +1325,7 @@ Each catalog entry has additional fields:
 | `is_externally_visible` (bool) | If true, code rename requires versioning ADR + transitional alias period |
 | `aliases` (string[]) | Predecessor codes during deprecation window |
 
-**Rationale:** Snake_case segments are predictable under simple regex (`[a-z_]+`) — friendly to log search, monitoring rules, partner integration pattern-matching, and AI-agent debugging. Hierarchical structure (vs flat identifiers like Stripe's `charge_already_refunded`) aligns with the vertical-slice architecture (per ADR-006): the slice owns its codes and the namespace makes ownership visible. The brand prefix `accountantim.` prevents collision with third-party error catalogs (Keycloak, Wolverine, Postgres SQLSTATE codes) when those bubble up through logs.
+**Rationale:** Snake_case segments are predictable under simple regex (`[a-z_]+`) — friendly to log search, monitoring rules, partner integration pattern-matching, and AI-agent debugging. Hierarchical structure (vs flat identifiers like Stripe's `charge_already_refunded`) aligns with the vertical-slice architecture (per ADR-006): the slice owns its codes and the namespace makes ownership visible. The brand prefix `faktuboh.` prevents collision with third-party error catalogs (Auth0, Wolverine, Postgres SQLSTATE codes, Resend) when those bubble up through logs.
 
 **Reversibility:** ★☆☆ — once external clients (or your own partner integrations) pattern-match on these strings, the *code* is a contract. The `id` GUID is the immutable cross-version anchor; codes can be aliased during versioning windows.
 
@@ -1310,9 +1344,9 @@ The conventions above are policed by four categories of executable gate. Silent 
 
 | Category | What it does | Where it lives |
 |---|---|---|
-| **CI schema-audit gates** | Asserts post-migration schema shape matches conventions: snake_case identifiers, `_at`→`timestamptz`, `_date`→`date`, `_amount`→`numeric(19, 4)`, currency `char(3)` with regex check | `tests/Infrastructure.Tests/SchemaAudit.cs` (xUnit, runs against ephemeral Postgres in CI) |
+| **CI schema-audit gates** | Asserts post-migration schema shape matches conventions: snake_case identifiers, `_at`→`timestamptz`, `_date`→`date`, `_amount`→`numeric(19, 4)`, `_rate`→`numeric(28, 8)`, currency `char(3)` with regex check | `tests/Infrastructure.Tests/SchemaAudit.cs` (xUnit, runs against ephemeral Postgres in CI) |
 | **Architecture tests** | Forbids attribute-based overrides that bypass conventions: no `[Table]`/`[Column]`/`[JsonPropertyName]` outside allowlist; no `DateTime` in DTOs; every money field is `Money` value object; every error code matches taxonomy regex with unique `id` | `tests/Architecture.Tests/*.cs` (NetArchTest) |
-| **Value-object encapsulation** | Makes the wrong choice impossible at the type level: `Money` value object with currency-aware validation; `MonthBoundary` helper; single `ConfigureJsonGlobally` extension | `libs/core/Domain/Money.cs`, `libs/core/Domain/CurrencyRegistry.cs`, `libs/core/Time/MonthBoundary.cs`, `Accountantim.Api/Configuration/JsonConfiguration.cs` |
+| **Value-object encapsulation** | Makes the wrong choice impossible at the type level: `Money` value object with currency-aware validation; `MonthBoundary` helper; single `ConfigureJsonGlobally` extension | `libs/core/Domain/Money.cs`, `libs/core/Domain/CurrencyRegistry.cs`, `libs/core/Time/MonthBoundary.cs`, `Faktuboh.Api/Configuration/JsonConfiguration.cs` |
 | **Snapshot + property-based tests** | Catches behavioral drift the static checks can't see: Verify-style JSON snapshots per endpoint, OpenAPI spec snapshot, FsCheck round-trip for Money across all currencies, timezone month-boundary fuzz across IANA zones | per-slice `*.Tests` projects + frontend `libs/core/money/__tests__` |
 
 **Lint layer (Spectral for OpenAPI, ESLint for TypeScript):**
@@ -1325,7 +1359,7 @@ The conventions above are policed by four categories of executable gate. Silent 
 
 ### 5.3 Batch B2 — Backend Code Conventions (Internal, Reversible)
 
-C# language baseline (PascalCase types, camelCase locals, `_camelCase` private fields, `Async` suffix on async methods, `I` prefix on interfaces, `record` for value-objects/DTOs) follows .NET community norms enforced by Roslyn analyzers — not re-stated here. This section covers what's still ambiguous given the FastEndpoints + Wolverine stack.
+C# language baseline (PascalCase types, camelCase locals, `_camelCase` private fields, `Async` suffix on async methods, `I` prefix on interfaces, `record` for value-objects/DTOs) follows .NET community norms enforced by Roslyn analyzers — not re-stated here. This section covers what's still ambiguous given the **Minimal APIs + FluentValidation + Wolverine** stack (per [ADR-024](./adrs/adr-024-minimal-apis-framework.md)).
 
 All conventions in this batch are ★★☆ (codemod-feasible) or ★★★ (trivially reversible). Enforcement is correspondingly lighter than B1.
 
@@ -1335,25 +1369,25 @@ All conventions in this batch are ★★☆ (codemod-feasible) or ★★★ (tri
 
 | Component | Naming | Notes |
 |---|---|---|
-| Endpoint class | `{Verb}{Noun}Endpoint` | Inherits `Endpoint<TRequest, TResponse>` (FastEndpoints) |
+| Route group | `{Slice}.Endpoints.cs` | One `MapGroup("/v1/{slice-kebab}")` per slice, registered in `Program.cs` |
 | Request DTO | `{Verb}{Noun}Request` (sealed record) | "Request" not "Command" — D4.4 deferred CQRS |
 | Response DTO | `{Verb}{Noun}Response` (sealed record) | "Response" not "Result" or "Dto" — symmetric with Request |
-| Validator | `{Verb}{Noun}RequestValidator` | `AbstractValidator<{Verb}{Noun}Request>` (FluentValidation) |
+| Validator | `{Verb}{Noun}RequestValidator` | `AbstractValidator<{Verb}{Noun}Request>` (FluentValidation); invoked by endpoint filter |
 | Mapper | static method `{Verb}{Noun}Response.From(entity)` | No named mapper class; static factory |
 | Handler | `{Verb}{Noun}Handler` | Wolverine handler; `Handle` method (Wolverine discovery) |
 | Domain event | `{Noun}{PastTenseVerb}Event` (sealed record) | `JournalEntryCreatedEvent`, `JournalEntryReversedEvent` — past tense always |
 
-**Worked example** for `journal-entries` create:
+**Worked example** for `journal-entries` create — Minimal API + FluentValidator + Wolverine:
 
 ```csharp
-// Slices/JournalEntries/Create/CreateJournalEntryEndpoint.cs
-
+// Slices/JournalEntries/Create/CreateJournalEntryRequest.cs
 public sealed record CreateJournalEntryRequest(
     DateOnly TransactionDate,
     Money Amount,
     string Description,
     Guid AccountId);
 
+// Slices/JournalEntries/Create/CreateJournalEntryResponse.cs
 public sealed record CreateJournalEntryResponse(
     Guid Id,
     DateTimeOffset CreatedAt,
@@ -1363,6 +1397,7 @@ public sealed record CreateJournalEntryResponse(
         new(entry.Id, entry.CreatedAt, entry.Status.ToString());
 }
 
+// Slices/JournalEntries/Create/CreateJournalEntryRequestValidator.cs
 public sealed class CreateJournalEntryRequestValidator
     : AbstractValidator<CreateJournalEntryRequest>
 {
@@ -1374,28 +1409,83 @@ public sealed class CreateJournalEntryRequestValidator
     }
 }
 
-public sealed class CreateJournalEntryEndpoint
-    : Endpoint<CreateJournalEntryRequest, CreateJournalEntryResponse>
+// Slices/JournalEntries/Create/CreateJournalEntryHandler.cs
+public sealed class CreateJournalEntryHandler
 {
-    public override void Configure()
-    {
-        Post("/v1/journal-entries");
-        // auth, idempotency middleware, etc.
-    }
-
-    public override async Task HandleAsync(
+    public async Task<JournalEntry> Handle(
         CreateJournalEntryRequest req,
+        IDocumentSession session,   // Wolverine-injected
         CancellationToken ct)
     {
-        // delegate to Wolverine handler or domain service
+        // domain logic — throws DomainException on business-rule violation,
+        // which is caught by DomainExceptionHandler (see §5.3.1.1)
+        // ...
+    }
+}
+
+// Slices/JournalEntries/JournalEntries.Endpoints.cs
+public static class JournalEntriesEndpoints
+{
+    public static IEndpointRouteBuilder MapJournalEntriesEndpoints(
+        this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/v1/journal-entries")
+            .WithTags("JournalEntries")
+            .RequireAuthorization();
+
+        group.MapPost("/", CreateAsync)
+            .AddEndpointFilter<ValidationFilter<CreateJournalEntryRequest>>()
+            .WithName("CreateJournalEntry")
+            .Produces<CreateJournalEntryResponse>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        return app;
+    }
+
+    private static async Task<Results<Created<CreateJournalEntryResponse>, ProblemHttpResult>> CreateAsync(
+        CreateJournalEntryRequest req,
+        CreateJournalEntryHandler handler,
+        CancellationToken ct)
+    {
+        var entry = await handler.Handle(req, /* ... */, ct);
+        var response = CreateJournalEntryResponse.From(entry);
+        return TypedResults.Created($"/v1/journal-entries/{entry.Id}", response);
     }
 }
 ```
 
+##### 5.3.1.1 Problem-Details Plumbing (per ADR-024)
+
+Problem-details responses are built on **.NET 10 built-ins** (`AddProblemDetails()` + `IExceptionHandler`) — Hellang.Middleware.ProblemDetails is explicitly **not** used (ADR-024 rationale).
+
+```csharp
+// Program.cs
+builder.Services.AddProblemDetails(options =>
+{
+    // stamp the `faktuboh.<slice>.<condition>` error code onto the `type` URI
+    options.CustomizeProblemDetails = ctx =>
+    {
+        if (ctx.ProblemDetails.Extensions.TryGetValue("code", out var code))
+            ctx.ProblemDetails.Type = $"https://faktuboh.com/errors/{code}";
+        ctx.ProblemDetails.Extensions["traceId"] = ctx.HttpContext.TraceIdentifier;
+    };
+});
+
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
+
+// per-slice:
+app.MapJournalEntriesEndpoints();
+// ...
+```
+
+Each slice owns a **`{SliceName}Exception` base** caught by a slice-scoped `IExceptionHandler` that emits RFC 9457 with the correct error code. Validator failures route through `ValidationExceptionHandler` (shared, one handler for all slices).
+
 **Reversibility:** ★★☆ (codemod-feasible).
 
 **Enforcement:**
-- Architecture test (NetArchTest): every endpoint class inherits from `Endpoint<,>`; every handler class declares a `Handle` method (Wolverine discovery requirement).
+- Architecture test (NetArchTest): every slice exposes exactly one `{Slice}Endpoints` static class with a `Map{Slice}Endpoints` extension; every handler class declares a `Handle` method (Wolverine discovery requirement); every `throw DomainException` references a code that exists in `ErrorCatalog` (D4.9).
 
 #### 5.3.2 Slice-Internal Organization (P8)
 
@@ -1408,22 +1498,24 @@ public sealed class CreateJournalEntryEndpoint
 ```
 Slices/
   JournalEntries/
+    JournalEntries.Endpoints.cs            # MapGroup + MapPost/MapGet per slice
     Create/
-      CreateJournalEntryEndpoint.cs        # FastEndpoints class
       CreateJournalEntryRequest.cs         # Request DTO
       CreateJournalEntryResponse.cs        # Response DTO
       CreateJournalEntryRequestValidator.cs # FluentValidation
       CreateJournalEntryHandler.cs         # Wolverine handler
       CreateJournalEntryEvents.cs          # Domain events emitted
     Reverse/
-      ReverseJournalEntryEndpoint.cs
+      ReverseJournalEntryRequest.cs
+      ReverseJournalEntryHandler.cs
       ...
     List/
-      ListJournalEntriesEndpoint.cs
       ListJournalEntriesQuery.cs
       ListJournalEntriesResponse.cs
+      ListJournalEntriesHandler.cs
       ...
   Accounts/
+    Accounts.Endpoints.cs
     Create/
       ...
 ```
@@ -1449,16 +1541,16 @@ Slices/
 
 ```
 tests/
-  Accountantim.Api.Tests/
+  Faktuboh.Api.Tests/
     Slices/
       JournalEntries/
         Create/
           CreateJournalEntryHandlerTests.cs        # Unit
           CreateJournalEntryRequestValidatorTests.cs  # Unit
           CreateJournalEntryEndpointTests.cs       # Integration
-  Accountantim.Worker.Tests/
+  Faktuboh.Worker.Tests/
     ...
-  Accountantim.Architecture.Tests/                  # NetArchTest, schema-audit, etc.
+  Faktuboh.Architecture.Tests/                  # NetArchTest, schema-audit, etc.
 ```
 
 **Class and file naming:** `{ClassNameUnderTest}Tests.cs`.
@@ -1509,7 +1601,7 @@ Integration tests use `WebApplicationFactory<Program>` + Testcontainers Postgres
 
 | Category | What it does | Where it lives |
 |---|---|---|
-| **Architecture tests** | Endpoint classes inherit `Endpoint<,>`; handlers have `Handle` method; cross-slice references forbidden (vertical-slice enforcement) | `tests/Accountantim.Architecture.Tests/` (NetArchTest) |
+| **Architecture tests** | Endpoint classes inherit `Endpoint<,>`; handlers have `Handle` method; cross-slice references forbidden (vertical-slice enforcement) | `tests/Faktuboh.Architecture.Tests/` (NetArchTest) |
 | **Convention check (warning)** | Flags slices not matching `{Verb}{Noun}{Role}.cs` file pattern; warning in first 3 months, error after MVP launch | CI script (`tools/check-slice-conventions.ps1`) |
 | **Documentation only** | Test method naming pattern, mocking library choice, integration-vs-unit categorization | This document; code review enforces |
 
@@ -1527,7 +1619,7 @@ All conventions in this batch are ★★☆ (codemod-feasible via Angular Schema
 
 **Three Angular 21 style-guide shifts resolved up-front:**
 
-| Shift | Old (pre-v17) | New (v17+) | Accountantim choice |
+| Shift | Old (pre-v17) | New (v17+) | Faktuboh choice |
 |---|---|---|---|
 | Component class suffix | `JournalEntryListComponent` | `JournalEntryList` | **Keep `Component` suffix** — explicit > terse for AI-agent code generation; matches existing community code; trivially reversible |
 | Component file suffix | `journal-entry-list.component.ts` | `journal-entry-list.ts` | **Keep `.component.ts`** — file-grep distinguishes components from services from helpers at a glance |
@@ -1704,7 +1796,7 @@ The **enforcement layer** (CI gates, architecture tests, value-object encapsulat
 |---|---|---|
 | RT-21 | Frontend `decimal.js` money-helper enforcement erodes (lint disabled, raw `+` on amounts found in PR) | Re-litigate P6 money wire format — without the helper, minor-units integer becomes the better choice |
 | RT-22 | First crypto-asset support requirement | Migrate `_amount` columns from `numeric(19, 4)` to `numeric(38, 18)` or unbounded; update `Money` value object precision rules; update schema-audit gate |
-| RT-23 | Catalog growth past ~200 error codes | Re-evaluate whether the 3-segment hierarchy `accountantim.<slice>.<condition>` is still sufficient |
+| RT-23 | Catalog growth past ~200 error codes | Re-evaluate whether the 3-segment hierarchy `faktuboh.<slice>.<condition>` is still sufficient |
 
 ---
 
@@ -1733,9 +1825,9 @@ Step 6 materializes Steps 3-5 into a concrete, walkable tree. Content organized 
 #### 6.2.1 Root Tree
 
 ```
-accountantim/
+faktuboh/
 ├── backend/                      # .NET 10 solution root
-│   ├── Accountantim.sln
+│   ├── Faktuboh.sln
 │   ├── global.json               # .NET SDK pin (e.g. "10.0.100")
 │   ├── Directory.Build.props     # shared MSBuild props, analyzers, nullable, warnings-as-errors
 │   ├── src/                      # detail in S2
@@ -1827,7 +1919,7 @@ A naive monorepo-idiomatic layout flattens both stacks under root-level `apps/` 
 
 ```
 # REJECTED
-accountantim/
+faktuboh/
 ├── apps/
 │   ├── api/              # .NET
 │   ├── owner-workspace/  # Angular
@@ -1860,22 +1952,22 @@ This fights .NET tooling: `dotnet` expects `.sln` + sibling projects with relati
 
 ```
 backend/
-├── Accountantim.sln
+├── Faktuboh.sln
 ├── global.json
 ├── Directory.Build.props
 ├── .editorconfig                      # (inherits from repo root)
 │
 ├── src/
-│   ├── Accountantim.AppHost/                     # Aspire 13 orchestrator
+│   ├── Faktuboh.AppHost/                     # Aspire 13 orchestrator
 │   │   ├── Program.cs                            # builder.AddPostgres() + AddProject<Api>()
 │   │   ├── appsettings.json
-│   │   └── Accountantim.AppHost.csproj
+│   │   └── Faktuboh.AppHost.csproj
 │   │
-│   ├── Accountantim.ServiceDefaults/             # Aspire defaults: OTEL, health, resilience, discovery
+│   ├── Faktuboh.ServiceDefaults/             # Aspire defaults: OTEL, health, resilience, discovery
 │   │   ├── Extensions.cs                         # AddServiceDefaults() extension
-│   │   └── Accountantim.ServiceDefaults.csproj
+│   │   └── Faktuboh.ServiceDefaults.csproj
 │   │
-│   ├── Accountantim.Domain/                      # pure domain — no EF, no Aspire, no ASP.NET
+│   ├── Faktuboh.Domain/                      # pure domain — no EF, no Aspire, no ASP.NET
 │   │   ├── Abstractions/
 │   │   │   ├── IAggregateRoot.cs
 │   │   │   ├── DomainEvent.cs
@@ -1896,11 +1988,11 @@ backend/
 │   │   │   └── ErrorCatalogRegistry.cs           # assembly-scan aggregator at startup
 │   │   ├── Identity/
 │   │   │   └── UserId.cs                         # strongly-typed IDs
-│   │   └── Accountantim.Domain.csproj
+│   │   └── Faktuboh.Domain.csproj
 │   │
-│   ├── Accountantim.Infrastructure/              # EF Core, Wolverine, integrations
+│   ├── Faktuboh.Infrastructure/              # EF Core, Wolverine, integrations
 │   │   ├── Persistence/
-│   │   │   ├── AccountantimDbContext.cs
+│   │   │   ├── FaktubohDbContext.cs
 │   │   │   ├── Configurations/                   # IEntityTypeConfiguration<T>
 │   │   │   │   ├── JournalEntryConfiguration.cs
 │   │   │   │   └── ...
@@ -1911,7 +2003,7 @@ backend/
 │   │   │   ├── 20260420120000_InitialSchema.cs
 │   │   │   ├── 20260420120000_InitialSchema.Designer.cs
 │   │   │   ├── 20260501090000_AddIdempotencyCache.cs
-│   │   │   └── AccountantimDbContextModelSnapshot.cs
+│   │   │   └── FaktubohDbContextModelSnapshot.cs
 │   │   ├── Repositories/
 │   │   │   ├── JournalEntryRepository.cs
 │   │   │   └── ...
@@ -1922,10 +2014,10 @@ backend/
 │   │   ├── Observability/
 │   │   │   └── OpenTelemetryExtensions.cs
 │   │   ├── External/                             # third-party clients (email, PSP stubs, KYC)
-│   │   └── Accountantim.Infrastructure.csproj
+│   │   └── Faktuboh.Infrastructure.csproj
 │   │
-│   └── Accountantim.Api/                         # ASP.NET host — FastEndpoints + vertical slices
-│       ├── Program.cs                            # minimal: AddServiceDefaults() + AddFastEndpoints() + AddWolverine()
+│   └── Faktuboh.Api/                         # ASP.NET host — Minimal APIs + vertical slices (ADR-024)
+│       ├── Program.cs                            # AddServiceDefaults() + AddProblemDetails() + AddExceptionHandler<T>() + AddWolverine() + slice MapGroup registrations
 │       ├── appsettings.json
 │       ├── appsettings.Development.json
 │       ├── Slices/                               # detail in 6.3.2
@@ -1946,12 +2038,12 @@ backend/
 │       ├── OpenApi/
 │       │   ├── OpenApiConfiguration.cs
 │       │   └── ErrorCatalogComponentGenerator.cs # emits error catalog into OpenAPI components/schemas
-│       └── Accountantim.Api.csproj
+│       └── Faktuboh.Api.csproj
 │
 └── tests/                                        # detail in 6.3.3
-    ├── Accountantim.Domain.Tests/
-    ├── Accountantim.Api.Tests/
-    └── Accountantim.Api.IntegrationTests/
+    ├── Faktuboh.Domain.Tests/
+    ├── Faktuboh.Api.Tests/
+    └── Faktuboh.Api.IntegrationTests/
 ```
 
 #### 6.3.2 Vertical-Slice Internal Structure
@@ -1959,13 +2051,13 @@ backend/
 Mirroring Step 5 B2 convention. A representative slice:
 
 ```
-src/Accountantim.Api/Slices/
+src/Faktuboh.Api/Slices/
 ├── JournalEntries/
 │   ├── _Shared/                              # slice-internal shared — NOT cross-slice
 │   │   ├── JournalEntry.cs                   # aggregate root
 │   │   ├── IJournalEntryRepository.cs        # slice-owned interface (impl in Infrastructure)
 │   │   ├── JournalEntryStatus.cs
-│   │   └── JournalEntryErrors.cs             # accountantim.journal_entries.* codes
+│   │   └── JournalEntryErrors.cs             # faktuboh.journal_entries.* codes
 │   │
 │   ├── Create/
 │   │   ├── CreateJournalEntryRequest.cs
@@ -2024,7 +2116,7 @@ src/Accountantim.Api/Slices/
 
 ```
 tests/
-├── Accountantim.Domain.Tests/                # pure unit tests — no Testcontainers, no Aspire
+├── Faktuboh.Domain.Tests/                # pure unit tests — no Testcontainers, no Aspire
 │   ├── Money/
 │   │   ├── MoneyTests.cs
 │   │   └── CurrencyRegistryTests.cs
@@ -2032,9 +2124,9 @@ tests/
 │   │   └── MonthBoundaryTests.cs
 │   ├── Errors/
 │   │   └── ErrorCatalogRegistryTests.cs
-│   └── Accountantim.Domain.Tests.csproj
+│   └── Faktuboh.Domain.Tests.csproj
 │
-├── Accountantim.Api.Tests/                   # unit tests — slice-mirrored structure
+├── Faktuboh.Api.Tests/                   # unit tests — slice-mirrored structure
 │   ├── Slices/
 │   │   ├── JournalEntries/
 │   │   │   ├── Create/
@@ -2055,10 +2147,10 @@ tests/
 │   │   ├── ErrorCatalogCompletenessTests.cs  # every thrown DomainError registered in catalog
 │   │   ├── SnakeCaseDbNamingTests.cs
 │   │   └── FluentValidationPresenceTests.cs  # every endpoint has a validator
-│   └── Accountantim.Api.Tests.csproj
+│   └── Faktuboh.Api.Tests.csproj
 │
-└── Accountantim.Api.IntegrationTests/        # Testcontainers-backed — [Trait("Category","Integration")]
-    ├── Slices/                               # mirrors src/Accountantim.Api/Slices
+└── Faktuboh.Api.IntegrationTests/        # Testcontainers-backed — [Trait("Category","Integration")]
+    ├── Slices/                               # mirrors src/Faktuboh.Api/Slices
     │   ├── JournalEntries/
     │   │   ├── CreateJournalEntryIntegrationTests.cs
     │   │   └── ReverseJournalEntryIntegrationTests.cs
@@ -2074,7 +2166,7 @@ tests/
     ├── Infrastructure/
     │   ├── WolverineOutboxIntegrationTests.cs
     │   └── IdempotencyEndToEndTests.cs
-    └── Accountantim.Api.IntegrationTests.csproj
+    └── Faktuboh.Api.IntegrationTests.csproj
 ```
 
 **Test organization principles:**
@@ -2114,7 +2206,7 @@ Test projects ──→ their respective source projects + testing libs
 | Decision | Reversibility | Revisit trigger |
 |---|---|---|
 | Vertical slices as folders (not projects) | Moderate — extracting a slice to its own project is mechanical but breaks existing namespaces | Slice grows past ~50 files OR needs independent deployment |
-| Single Api project hosts all slices including PublicStatement | Moderate — public-statement splitting into own Api project is feasible (they'd share Infrastructure + Domain) | D4.6 CDN load > 500rps sustained OR public-facing security boundary hardening required |
+| Single Api project hosts all slices including PublicStatement | Moderate — public-statement splitting into own Api project is feasible (they'd share Infrastructure + Domain) | Actual sustained AFD edge load exceeds D4.6's 500 rps cache-sizing posture (what was designed as burst-only becomes the new normal) OR public-facing security boundary hardening required |
 | Migrations at EF default location (not slice-grouped) | Low-cost reversible — directory move + `dotnet ef` config | No realistic trigger (schema-audit gate already enforces cohesion) |
 | Domain as separate project (not folder in Api) | Moderate — merging would lose NetArchTest boundary enforcement | No expected trigger — keeping Domain isolated is fundamental |
 
@@ -2192,8 +2284,7 @@ apps/owner-workspace/
 │   │   │   │   │   └── journal-entries-api.service.ts       # wraps generated api-contracts
 │   │   │   │   └── i18n/
 │   │   │   │       ├── ar.json
-│   │   │   │       ├── en.json
-│   │   │   │       └── fr.json
+│   │   │   │       └── en.json
 │   │   │   ├── accounts/
 │   │   │   ├── users/                                       # profile, email verification
 │   │   │   └── dashboard/                                   # home landing
@@ -2210,8 +2301,7 @@ apps/owner-workspace/
 │   ├── assets/
 │   │   ├── i18n/                      # app-chrome translations (shell, auth, dashboard)
 │   │   │   ├── ar.json
-│   │   │   ├── en.json
-│   │   │   └── fr.json
+│   │   │   └── en.json
 │   │   ├── fonts/                     # Noto Sans Arabic, Inter
 │   │   ├── icons/                     # app-specific; ds icons live in design-system
 │   │   └── images/
@@ -2262,8 +2352,7 @@ apps/public-statement/
 │   ├── assets/
 │   │   ├── i18n/                      # auto-detected from statement locale
 │   │   │   ├── ar.json
-│   │   │   ├── en.json
-│   │   │   └── fr.json
+│   │   │   └── en.json
 │   │   ├── fonts/
 │   │   └── images/
 │   │
@@ -2401,8 +2490,7 @@ libs/domain-ui/
 │   ├── assets/
 │   │   └── i18n/                                   # Transloco scope: "domain-ui"
 │   │       ├── ar.json
-│   │       ├── en.json
-│   │       └── fr.json
+│   │       └── en.json
 │   │
 │   └── test-setup.ts
 │
@@ -2514,7 +2602,7 @@ The load-bearing seam between backend and frontend (Step 4 D4.3 + S1 §6.2.3 com
 **Pipeline:**
 
 ```
-backend/src/Accountantim.Api  ──(dotnet run /openapi)──→  openapi.json
+backend/src/Faktuboh.Api  ──(dotnet run /openapi)──→  openapi.json
          │
          └─── scripts/gen-contracts.ps1 ──(ng-openapi-gen)──→  frontend/libs/api-contracts/src/generated/
                                                                        ├── models/
@@ -2528,10 +2616,10 @@ backend/src/Accountantim.Api  ──(dotnet run /openapi)──→  openapi.json
 
 ```powershell
 # 1. Build backend
-dotnet build backend/src/Accountantim.Api
+dotnet build backend/src/Faktuboh.Api
 
 # 2. Dump OpenAPI spec
-dotnet run --project backend/src/Accountantim.Api -- --generate-openapi-doc
+dotnet run --project backend/src/Faktuboh.Api -- --generate-openapi-doc
   > backend/artifacts/openapi.json
 
 # 3. Run ng-openapi-gen
@@ -2592,7 +2680,7 @@ jobs:
 
 ```bash
 # Backend + Postgres + OTEL collector
-dotnet run --project backend/src/Accountantim.AppHost
+dotnet run --project backend/src/Faktuboh.AppHost
 
 # Frontend (separate terminal per app)
 npm run start:owner --prefix frontend       # ng serve owner-workspace, port 4200
@@ -2602,7 +2690,7 @@ npm run start:public --prefix frontend      # ng serve public-statement, port 42
 npm run gen:contracts --prefix frontend     # wraps scripts/gen-contracts.ps1
 ```
 
-**Aspire AppHost responsibilities (`backend/src/Accountantim.AppHost/Program.cs`):**
+**Aspire AppHost responsibilities (`backend/src/Faktuboh.AppHost/Program.cs`):**
 - Provisions Postgres container (via Testcontainers.Aspire or equivalent)
 - Applies EF migrations on startup
 - Seeds dev data from `scripts/seed-dev-db.ps1`
@@ -2642,7 +2730,7 @@ infra/azure/
 │   ├── app-service-api.bicep          # Linux container App Service for Api
 │   ├── static-web-app-owner.bicep     # owner-workspace hosting
 │   ├── static-web-app-public.bicep    # public-statement hosting behind Front Door CDN
-│   ├── cdn.bicep                      # Front Door profile + caching rules (D4.6 — 80/500 rps + p95<300ms)
+│   ├── cdn.bicep                      # Front Door profile + caching rules (D4.6 — 83 rps sustained SLO; 500 rps cache-sizing posture; p95<300ms)
 │   ├── app-insights.bicep             # OTEL sink
 │   ├── key-vault.bicep                # secrets + capability-token signing keys
 │   └── service-bus.bicep              # empty stub — enable on RT for D4.12 reversal
@@ -2687,7 +2775,7 @@ docs/
 
 #### 6.5.6 Environment Configuration
 
-**Backend (`backend/src/Accountantim.Api/`):**
+**Backend (`backend/src/Faktuboh.Api/`):**
 
 ```
 appsettings.json                  # defaults + schema
@@ -2723,7 +2811,7 @@ Maps PRD epics to concrete backend slices + frontend features:
 | **Public statement share** | `Slices/PublicStatement/GetByToken` + `Slices/Accounts/GenerateCapabilityToken` | `apps/public-statement/src/app/statement/` + share UI inside `apps/owner-workspace/src/app/features/accounts/` | `libs/domain-ui/statement/` (shared between both apps — **this is why domain-ui exists**) |
 | **Monthly close / period boundaries** | `Slices/Periods/*` | `apps/owner-workspace/src/app/features/dashboard/` | `libs/domain-ui/date/month-selector.component.ts` |
 | **Multi-currency support** | Cross-cutting — `Domain/Money/` + slice-internal money handling | Cross-cutting — `libs/domain-ui/money/money-display.component.ts` + `libs/design-system/forms/money-input.component.ts` | `libs/core/resources/` decimal.js helpers |
-| **i18n (AR/EN/FR + RTL)** | Cross-cutting — error code Transloco keys in `ValidationCatalog` | Cross-cutting — `libs/core/state/locale.service.ts` + per-scope i18n files | — |
+| **i18n (AR + EN, RTL)** | Cross-cutting — error code Transloco keys in `ValidationCatalog` | Cross-cutting — `libs/core/state/locale.service.ts` + per-scope i18n files | French deferred post-MVP; `fr.json` scaffolding removed to match PRD locale set. |
 
 **Rule when adding a new epic:** the first scaffolding commit creates both sides in lockstep — backend slice folder + frontend feature folder + optional `domain-ui` entries if cross-app. CI fitness function (future) verifies any new `Slices/<Slice>/` folder has a corresponding `apps/owner-workspace/src/app/features/<slice-kebab>/` or an explicit exemption.
 
@@ -2765,7 +2853,7 @@ Maps PRD epics to concrete backend slices + frontend features:
 
 | Pattern | When used | Transport |
 |---|---|---|
-| HTTP request/response | Client → Api | ASP.NET + FastEndpoints |
+| HTTP request/response | Client → Api | ASP.NET Core Minimal APIs (per ADR-024) |
 | In-process messaging (commands) | Endpoint → handler (when endpoint explicitly dispatches) | Wolverine in-memory |
 | Domain events | Aggregate mutation → downstream projection | Wolverine Postgres transport + outbox |
 | Scheduled work | Idempotency cache cleanup, capability-token TTL expiry | Wolverine scheduler |
@@ -2776,11 +2864,12 @@ Maps PRD epics to concrete backend slices + frontend features:
 
 | Integration | Status | Location | Notes |
 |---|---|---|---|
-| Email (verification, password reset) | Stub in MVP | `Infrastructure/External/EmailClient.cs` | Concrete provider selection deferred; logs in dev, stubbed in staging |
+| **Auth emails** (password reset, magic-link, MFA) | **Auth0** (per [ADR-021](./adrs/adr-021-auth0-identity-provider.md)) | Auth0 tenant (`auth.faktuboh.com`) | Delegated to Auth0 Passwordless + hosted login; no code in our service. Covers PRD FR3 + FR42. |
+| **Transactional email** (debt notifications, confirmation receipts, statement-share) | **Resend free tier, `eu-west-1`** (per [ADR-023](./adrs/adr-023-resend-transactional-email.md)) | `Infrastructure/External/Email/ResendClient.cs` | 3,000/mo + 100/day free cap (beta window projected ~500/mo). Routed through **Wolverine outbox** — durable and retried on failure. API key in `RESEND_API_KEY` env var (sourced from Key Vault). DKIM + DMARC configured at `faktuboh.com` domain. |
 | Payment Service Provider | Deferred post-MVP | reserved namespace `Infrastructure/External/Psp/` | — |
 | KYC / compliance | Deferred post-MVP | reserved namespace `Infrastructure/External/Kyc/` | MENA+EU reg-differentials — ADR when triggered |
 | OpenTelemetry sink | Azure Application Insights in prod; console in dev | `Infrastructure/Observability/` | Via ServiceDefaults |
-| Azure Key Vault | Prod + staging secret resolution | `ServiceDefaults` | — |
+| Azure Key Vault | Prod + staging secret resolution | `ServiceDefaults` | Standard tier (per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md)) — holds KEK + non-crypto secrets. |
 
 #### 6.5.11 Development Workflow Integration
 
@@ -2852,9 +2941,9 @@ Each elicitation round produced traceable deltas in §7.5 (resolution plan), §7
 
 ### 7.2 Coherence Validation (V1) ✅
 
-**Decision Compatibility:** All Category 1-6 decisions verified to compose without conflict. Technology versions compatible (Angular 21 zoneless + Signals + Signal Forms; PrimeNG 21 + Tailwind 4; .NET 10 + FastEndpoints 7.x + Wolverine + Aspire 13; Postgres Flexible Server + temporal_tables; Keycloak 26+ on Azure Container Apps).
+**Decision Compatibility:** All Category 1-6 decisions verified to compose without conflict. Technology versions compatible (Angular 21 zoneless + Signals + Signal Forms; PrimeNG 21 + Tailwind 4; .NET 10 + ASP.NET Core Minimal APIs + FluentValidation + Wolverine + Aspire 13; Postgres Flexible Server + application-layer bitemporal interceptor per ADR-022; Auth0 free tier on `auth.faktuboh.com` per ADR-021; Azure Key Vault Standard per ADR-025).
 
-**Pattern Consistency:** Vertical-slice mirror between backend (`Accountantim.Api/<Slice>/`) and frontend (`apps/owner-workspace/src/app/features/<slice>/`) holds across all 9 PRD epic categories. RFC 9457 Problem Details envelope flows end-to-end through FastEndpoints emission → Signal Forms `applyServerErrors` → Transloco ValidationCatalog lookup.
+**Pattern Consistency:** Vertical-slice mirror between backend (`Faktuboh.Api/<Slice>/`) and frontend (`apps/owner-workspace/src/app/features/<slice>/`) holds across all 9 PRD epic categories. RFC 9457 Problem Details envelope flows end-to-end through Minimal-API `TypedResults.Problem` emission (via `.NET 10 AddProblemDetails()` + per-exception `IExceptionHandler`) → Signal Forms `applyServerErrors` → Transloco ValidationCatalog lookup.
 
 **Structure Alignment:** Repository layout (`backend/` + `frontend/` + `infra/` + `docs/`) supports both Angular workspace and .NET solution conventions. Aspire AppHost orchestrates local dev across the polyglot stack.
 
@@ -2890,7 +2979,7 @@ All 9 PRD functional-requirement categories (FR1-FR51) mapped to concrete archit
 
 **Known Weaknesses (named, not eliminated):**
 - **Single-observer enforcement gap** — solo-dev + self-enforced CI gates + RTs form a system where the only observer is the same person who benefits from ignoring them. Mitigated (§7.5.6) via git pre-push hook + async-reviewer wiring; not eliminated.
-- **FastEndpoints and Keycloak are single points of failure** — abandonment branches exist but migration cost materializes if invoked mid-scaffold.
+- **Auth0 and Resend are external vendor dependencies** — each replaces a self-hosted path (Keycloak on ACA, stubbed email) per ADR-021 and ADR-023. Vendor outage fallback is documented per-integration (Auth0: maintenance windows are rare and short; Resend: sends queue in Wolverine's outbox and retry). Migration to self-hosted (if ever needed post-MVP) is a one-time boundary swap, not an in-flight scaffold risk.
 - **Composed constants still present** — 3 user-declared TBDs (burn tolerance, signal milestones, pool safety_factor) block scaffold commit finality.
 
 #### 7.4.1 Cost-Floor Check
@@ -2905,12 +2994,13 @@ Before committing to the full Azure stack at scaffold completion, calculate Mont
 3. **Postgres Flexible Server** → Burstable B1ms (free 12 months on new Azure subscription)
 4. **Azure Container Apps** → Consumption workload profile with scale-to-zero mandatory (idle replicas = €0)
 5. **Azure Container Registry** → replaced with **GitHub Container Registry** (free public + private)
-6. **Key Vault** → Standard tier (nearly-free at low transaction volume)
-7. **Keycloak** → runs on shared ACA Consumption environment (scale-to-zero when idle)
+6. **Key Vault** → **Standard tier** (per [ADR-025](./adrs/adr-025-key-vault-standard-for-mvp.md); projected <€1/month at MVP operation volume) — Premium HSM deferred until enterprise RFP requires it
+7. **Identity** → **Auth0 free tier** (per [ADR-021](./adrs/adr-021-auth0-identity-provider.md); €0 to 7,500 MAU) — replaces self-hosted Keycloak on ACA; reclaims the container slot
+8. **Transactional email** → **Resend free tier, `eu-west-1`** (per [ADR-023](./adrs/adr-023-resend-transactional-email.md); €0 to 3,000 emails/mo). Auth emails handled inside Auth0.
 
 **Architectural implication (flagged as §4 revision candidate — not retroactive):**
 - **D4.19 Azure Front Door** → superseded by Azure Static Web Apps built-in CDN
-- **D4.6 capacity targets (80rps sustained / 500rps burst for public-statement)** → attainable within ASWA free tier (100GB/month bandwidth); burst behavior unverified at free-tier, remains under RT-33
+- **D4.6 capacity targets (83 rps PRD commitment; 500 rps design-posture upper bound for cache sizing)** → attainable within ASWA free tier (100GB/month bandwidth); burst behavior unverified at free-tier, remains under RT-33
 - These are not rewritten in §4 during Step 8 completion; invoke `bmad-correct-course` when ready to cascade the §4 edits formally
 
 **Scaffold no-go gate:** If any single service in the free-tier stack exceeds its free allowance projection within the first 90 days, remediation pause + re-model + user decision: raise tolerance OR descope further OR defer that slice.
@@ -2933,29 +3023,23 @@ Before committing to the full Azure stack at scaffold completion, calculate Mont
 
 **2-hour timebox, precedes Day 0 gates.**
 
-Framed as an **open assumption** — the scaffold defaults to "we are building this from scratch"; this search exists to **falsify** that default. Targets: GitHub search for Nx workspace + FastEndpoints + Wolverine + Keycloak-on-ACA starter templates.
+Framed as an **open assumption** — the scaffold defaults to "we are building this from scratch"; this search exists to **falsify** that default. Targets: GitHub search for Nx workspace + .NET 10 Minimal APIs + Wolverine + Auth0 OIDC starter templates.
 
 **Adopt threshold:** any template that replaces ≥40% of Day 0 + Day 1-5 effort. If adopted, §7.5.1-§7.5.3 are re-scoped against the template's baseline. If no template clears the threshold, proceed to §7.5.1.
 
 **Deliverable:** one-line adoption decision recorded inline at §7.5.0 before Day 0 gates commence.
 
-#### 7.5.1 Day 0 Gates (Two Spikes)
+#### 7.5.1 Day 0 Gates — DISSOLVED
 
-Both gates must produce a go/no-go decision before first slice ships.
+Both original gates are dissolved by post-adversarial-review decisions:
 
-**Gate 1 — FastEndpoints × .NET 10 source-gen spike.**
-*Validation target:* source-gen + endpoint discovery + RFC 9457 Problem Details emission + OpenAPI contract generation compose cleanly on .NET 10.
-*Timebox:* 3 days maximum.
-*Abandonment branch:* minimal API pre-evaluated as primary fallback → Carter / Fast-alt libraries as tertiary → defer source-gen to Phase 2 if neither resolves within 5 days cumulative.
-*Revisit trigger:* **RT-40**.
+**~~Gate 1 — FastEndpoints × .NET 10 source-gen spike~~** — **DISSOLVED** per [ADR-024](./adrs/adr-024-minimal-apis-framework.md). FastEndpoints is removed from scope entirely in favor of ASP.NET Core Minimal APIs + FluentValidation + source-gen OpenAPI. No spike required — stack is first-party on .NET 10. RT-40 dissolved.
 
-**Gate 2 — Keycloak-on-ACA session-affinity spike.**
-*Validation target:* session persistence survives ACA replica autoscale events; sticky-session cookie vs externalized session store decision resolved.
-*Timebox:* 3 days maximum.
-*Abandonment branch:* IdentityServer (self-host) as primary fallback → Auth0 (managed) as tertiary; both pre-evaluated for feature parity with §4.5 requirements.
-*Revisit trigger:* **RT-39**.
+**~~Gate 2 — Keycloak-on-ACA session-affinity spike~~** — **DISSOLVED** per [ADR-021](./adrs/adr-021-auth0-identity-provider.md). Keycloak is removed from scope; identity is Auth0 free tier (EU tenant, `auth.faktuboh.com` custom domain). No session-affinity concern — Auth0 is a managed edge service with no cold-start. RT-39 dissolved.
 
 *ADR-017 (dual-endpoint-convention proof) and ADR-018 (integration event governance) were elicitation-surfaced as candidate Day 0 gates and subsequently **demoted to post-Slice-1 triggers** — they become urgent when their respective subjects materialize in real cross-slice traffic, not before.*
+
+**Net effect on Day 0:** The original plan allocated up to 6 days to these two spikes. Both are now dissolved, returning that time to Slice-1 feature development. This is load-bearing for the Day 35 dogfood milestone.
 
 #### 7.5.2 First Slice Definition
 
@@ -2970,9 +3054,9 @@ Both gates must produce a go/no-go decision before first slice ships.
 
 | # | Invariant | Enforcement |
 |---|---|---|
-| 1 | Shared Kernel purity — no dependency on `Accountantim.Api` | NetArchTest |
+| 1 | Shared Kernel purity — no dependency on `Faktuboh.Api` | NetArchTest |
 | 2 | Slice isolation — no cross-slice `Domain/` dependencies | NetArchTest |
-| 3 | Cross-slice communication only via `Accountantim.Domain.Events.IntegrationEvents` | NetArchTest |
+| 3 | Cross-slice communication only via `Faktuboh.Domain.Events.IntegrationEvents` | NetArchTest |
 | 4 | Shared Kernel holds no `IAggregateRoot` types | NetArchTest |
 
 **Enforcement convention — CI-gate-first rule:** for each fitness test, CI wiring (required check) lands **before** test content is marked done. Authored-but-unwired is treated as unfinished.
@@ -2987,7 +3071,7 @@ Both gates must produce a go/no-go decision before first slice ships.
 
 **Scope at scaffold time — 3 surfaces only:**
 1. API routes
-2. Claim names (Keycloak claim mappings)
+2. Claim names (Auth0 custom claim mappings — set via Auth0 Actions per ADR-021)
 3. Postgres column names
 
 *Rationale:* these three surfaces cover **wire-format + identity + persistence** — the surfaces where UL drift becomes externally wire-breaking. Additional surfaces (OTel attributes, Wolverine envelope headers, Transloco keys, migration filenames, log message templates) added reactively on first drift incident (RT-34).
@@ -3032,19 +3116,19 @@ Three items caught by Self-Consistency round — fresh-reconstruction would deri
 
 1. **Dogfood seed-data strategy** — authored before Day 25 dogfood milestone. Approach options (pick one): hand-authored seed SQL / Wolverine seed job / dev-mode endpoint. Output: `docs/development/dogfood-seed.md` + actual seed artifact.
 2. **Backup/restore rehearsal — RT-46 hard gate.** One full Postgres point-in-time-restore rehearsal completed before first paying user. Drill includes KMS-encrypted field round-trip validation (envelope encryption per-subject DEK rotation survives restore).
-3. **Secrets rotation dry-run — ADR-020.** Keycloak signing-key rotation + Key Vault KEK rotation rehearsed end-to-end before first paying user. No rotation attempted in production without prior rehearsal.
+3. **Secrets rotation dry-run — ADR-020.** Auth0 client-secret / signing-key rotation + Key Vault KEK rotation rehearsed end-to-end before first paying user (quarterly cadence per ADR-025). No rotation attempted in production without prior rehearsal.
 
 #### 7.5.9 Additional §7.5 Items (Late-Caught Gaps)
 
-- **Transloco key governance policy** — authored before first public-statement slice ships. Covers RTL (Arabic) + FR variant drift on shared form-error keys. Output: `libs/core/i18n/TRANSLOCO_GOVERNANCE.md` + validation pipeline in CI.
-- **Postgres pool sizing floor** — `MaxPoolSize` set in initial ACA manifest via derivation formula: `MaxPoolSize = (Postgres max_connections budget) ÷ (ACA max_replicas) ÷ safety_factor`, where **`safety_factor = 2.0`** (balanced fintech default; declared 2026-04-21). Example at Postgres Burstable B1ms (max_connections = 85) + ACA max_replicas = 3 → MaxPoolSize ≈ 14 per replica, leaving ~30 connection headroom for Keycloak + Wolverine worker + admin tooling. Prevents autoscale-driven pool exhaustion (hindsight-caught Month 2 pain).
+- **Transloco key governance policy** — authored before first public-statement slice ships. Covers RTL (Arabic) drift on shared form-error keys. French is deferred post-MVP (see locale table in §6.5.10), so Transloco governance is scoped to AR + EN only. Output: `libs/core/i18n/TRANSLOCO_GOVERNANCE.md` + validation pipeline in CI.
+- **Postgres pool sizing floor** — `MaxPoolSize` set in initial ACA manifest via derivation formula: `MaxPoolSize = (Postgres max_connections budget) ÷ (ACA max_replicas) ÷ safety_factor`, where **`safety_factor = 2.0`** (balanced fintech default; declared 2026-04-21). Example at Postgres Burstable B1ms (max_connections = 85) + ACA max_replicas = 3 → MaxPoolSize ≈ 14 per replica, leaving ~30 connection headroom for Wolverine worker + admin tooling (no Keycloak pool, since identity is Auth0-managed per ADR-021). Prevents autoscale-driven pool exhaustion (hindsight-caught Month 2 pain).
 
 ### 7.6 Architecture Completeness Checklist
 
 **✅ Requirements Analysis**
 - [x] Project context thoroughly analyzed (PRD + product briefs + UX spec)
 - [x] Scale and complexity assessed (MENA+EU fintech, solo dev, daily-use)
-- [x] Technical constraints identified (Azure Europe, 180 KB gz, LCP<2.5s, 80rps/500rps public path)
+- [x] Technical constraints identified (Azure Europe, 180 KB gz, LCP<2.5s, 83 rps sustained SLO / 500 rps cache-sizing posture on public path)
 - [x] Cross-cutting concerns mapped (auth, i18n, audit, observability, security)
 
 **✅ Architectural Decisions**
@@ -3077,7 +3161,7 @@ Three items caught by Self-Consistency round — fresh-reconstruction would deri
 **Overall Status:** CONDITIONALLY-SCAFFOLDABLE
 **Confidence:** Medium-High
 **User-declared inputs (resolved 2026-04-21):** burn tolerance €0/month (free-tier-only), dogfood Day 35, beta Day 55, descope-trigger Day 42, pool safety_factor 2.0 — ✅ cleared
-**Blockers before first slice ships:** 2 Day 0 gates (FastEndpoints spike, Keycloak spike) + scaffold-search falsification task
+**Blockers before first slice ships:** scaffold-search falsification task (both Day 0 gates dissolved per ADR-021 and ADR-024)
 **Blockers before first paying user:** RT-46 backup-restore rehearsal + ADR-020 rotation dry-run
 **§4 revision candidates triggered by €0 tolerance:** D4.19 (Azure Front Door → Azure Static Web Apps) + free-tier substitutions for D4.6/ACR/App Insights — cascade via `bmad-correct-course` when ready
 
@@ -3091,7 +3175,7 @@ Three items caught by Self-Consistency round — fresh-reconstruction would deri
 
 **First Implementation Priority (ordered):**
 1. Complete §7.5.0 scaffold-search (2h timebox) — may restructure all subsequent items
-2. Execute Day 0 Gate 1 (FastEndpoints spike) + Day 0 Gate 2 (Keycloak spike) — serial or parallel based on available focused time
+2. ~~Execute Day 0 Gate 1 (FastEndpoints spike) + Day 0 Gate 2 (Keycloak spike)~~ — **both dissolved** per ADR-021 (Auth0) and ADR-024 (Minimal APIs); skip to fitness tests
 3. Author 4 fitness tests + wire to CI (CI-gate-first rule)
 4. Implement first slice: Contacts/Create with opening-balance (§7.5.2)
 5. Emit `ContactCreated` integration event + no-op Debts projection handler consumer
@@ -3109,18 +3193,19 @@ Three items caught by Self-Consistency round — fresh-reconstruction would deri
 | RT-36 | NetArchTest disabled >48h without ADR amendment | Session-wide architecture review |
 | RT-37 | First cross-slice integration event contract breakage | ADR-018 (Integration Event Governance) authoring becomes urgent |
 | RT-38 | First slice ships >Day 30 calendar from remediation start | §7.5 remediation descope review mandatory |
-| RT-39 | Keycloak-on-ACA Day 0 gate exceeds 3-day timebox | Invoke abandonment branch: IdentityServer / Auth0 |
-| RT-40 | FastEndpoints Day 0 spike inconclusive beyond 3 days | Switch to minimal API pre-evaluated fallback |
+| ~~RT-39~~ | **DISSOLVED** (2026-04-21) — Auth0 adopted per ADR-021; no Keycloak-on-ACA gate remains |
+| ~~RT-40~~ | **DISSOLVED** (2026-04-21) — Minimal APIs adopted per ADR-024; no FastEndpoints spike remains |
 | RT-41 | First slice fails to exercise idempotency with financial consequence | Replace first slice or add second gate slice before proceeding |
 | RT-43 | Cross-slice integration event envelope shape diverges between slices | ADR-018 authoring escalated to immediate |
 | RT-44 | First production user acquired | Begin Phase 2 ops-readiness (runbook + alerts + on-call + SLO dashboard) |
 | RT-45 | Actual Azure Month 1 bill >20% over declared tolerance after 3 months live | Mandatory stack descope review |
 | RT-46 | First paying user within 7-day window | Backup/restore rehearsal completion (hard gate; blocks user onboarding if unmet) |
 | RT-47 | Month 13 reached (12-month Azure free-tier benefits expire — primarily Postgres Burstable B1ms) | Mandatory tolerance revision + stack re-model against new floor (~€12-15/month absolute minimum) |
+| RT-48 | First paid signup from France, Belgium, or Luxembourg | Revisit locale set — add `fr.json` + French translations; review CSA-specific compliance language and secure native-speaker review budget (deferred per ADR-021 cascade / Contract-drift R-09) |
 
 *RT-42 intentionally absent — superseded by git pre-push hook mechanism (§7.5.3).*
 
-**Cumulative revisit triggers now registered:** RT-01 through RT-47 (14 from Step 4, 3 from Step 5, 9 from Step 6, 15 from Step 7 = 41 total, minus RT-42 = **40 active**).
+**Cumulative revisit triggers now registered:** RT-01 through RT-48 (14 from Step 4, 3 from Step 5, 9 from Step 6, 16 from Step 7 = 42 total, minus RT-42 = **41 active**).
 
 ### 7.10 Proposed ADRs (Micro Format)
 
@@ -3131,17 +3216,17 @@ Three items caught by Self-Consistency round — fresh-reconstruction would deri
 | ADR-011 | Shared Kernel architecture (DDD + VSA reconciliation) | Micro | Domain organization + fitness test enforcement |
 | ADR-013 | Ubiquitous Language mapping (PRD ↔ Architecture) | Micro | Translation table + 3-surface enforcement |
 | ADR-016 | Fitness-function enforcement policy | Micro | CI required-check + local git pre-push hook |
-| ADR-017 | Dual-endpoint-convention proof (post-Slice-1 trigger) | Micro | FastEndpoints / minimal API parity — authored when second endpoint convention needed |
+| ADR-017 | Dual-endpoint-convention proof (post-Slice-1 trigger) | Micro | Minimal-API slice-registration parity — authored if a second endpoint convention (e.g., gRPC, GraphQL, SignalR) is ever adopted alongside the Minimal-API slice pattern |
 | ADR-018 | Integration Event Contract Governance (post-Slice-1 trigger) | Micro | Versioning + retry policy + dead-letter escalation — authored when first cross-slice consumption materializes |
 | ADR-019 | Bitemporal schema-evolution playbook | Micro | Additive vs breaking shape-change paths on temporal tables |
-| ADR-020 | Secrets rotation runbook | Micro | Keycloak signing-key rotation + Key Vault KEK rotation |
+| ADR-020 | Secrets rotation runbook | Micro | Auth0 tenant client-secret / signing-key rotation + Key Vault KEK rotation (quarterly cadence) |
 
 ### 7.11 Section 7 Summary
 
 **Validation methodology:** Option β layered (V1 Coherence + V2 Coverage + V3 Readiness + V4 Gap Analysis), hardened through 7 Advanced Elicitation rounds and signed off with user confirmation at each batch.
 
 **Final shape:**
-- **Day 0 gates:** 2 (FastEndpoints spike + Keycloak-on-ACA spike) — each with pre-defined abandonment branches
+- **Day 0 gates:** 0 — both original gates (FastEndpoints spike, Keycloak-on-ACA spike) **dissolved** 2026-04-21 per [ADR-021](./adrs/adr-021-auth0-identity-provider.md) and [ADR-024](./adrs/adr-024-minimal-apis-framework.md); ~6 days of scaffold-critical-path recovered
 - **Fitness tests CI-wired:** 4 + 1 manual norm (ADR-011)
 - **Glossary scanner surfaces:** 3 at scaffold time (routes, claims, DB columns) — 7-surface expansion reactive
 - **Proposed micro-ADRs:** 7 (ADR-011, 013, 016, 017, 018, 019, 020)
@@ -3165,7 +3250,7 @@ pool_safety_factor: 2.0              # §7.5.9 — balanced fintech default
 *From the Hindsight Reflection round. Kept as a reference predicting which §7 items will earn their keep vs. prove to be ceremony, so post-launch retrospective can audit.*
 
 **Predicted load-bearing (will have saved pain by Day 180):**
-- Day 0 spikes (FastEndpoints + Keycloak) — real decisions that couldn't be deferred; session-affinity discovery alone prevents a prod 3am page
+- ~~Day 0 spikes (FastEndpoints + Keycloak)~~ — **dissolved** 2026-04-21 per ADR-021 + ADR-024 before the hindsight reflection would have landed; the decisions that would have made these spikes load-bearing were replaced with managed-service paths (Auth0, Minimal APIs) that eliminate the classes of 3am pages those spikes anticipated. **Actually load-bearing in the revised architecture:** Auth0 custom-domain + CNAME/TXT/cert provisioning completed at tenant setup — prevents a post-launch token-invalidation incident.
 - Fitness tests #1 (SK purity) + #2 (slice isolation) CI-wired — catch late-night solo-dev drift at the PR gate
 - First slice = Contacts/Create with opening balance — exercises Money + idempotency + bitemporal + integration event before compounding complexity
 - Micro-ADR format — keeps decision record without dissertation cost
