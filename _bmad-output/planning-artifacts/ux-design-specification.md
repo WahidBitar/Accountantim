@@ -523,7 +523,8 @@ Tailwind is explicitly **not** used to restyle PrimeNG components — all compon
 - `Galleria`, `Carousel`, `Timeline` (too motion-rich)
 - `Rating`, `Knob` (gamification-adjacent)
 - `Steps` wizard UI (long onboarding anti-pattern)
-- `Chart` (deferred until a clear analytics need emerges)
+
+**`Chart` — scoped use only:** PrimeNG `Chart` is permitted exclusively for the FR32 (debt distribution across contacts — bar) and FR33 (debt distribution across denominations — pie) dashboard charts. Decorative or celebratory chart usage elsewhere remains forbidden. Visual treatment must follow the "Quiet chart envelope" defined in *Direction 6 Implementation Approach → Quiet chart envelope (FR32/FR33)*.
 
 **Token override pattern.** All custom visuals go through PrimeNG's theme preset system, never via `::ng-deep` or style overrides in components. This is enforced by lint rule.
 
@@ -971,11 +972,55 @@ the logo lives alongside them but is never used as a source for UI values.
 
 #### Out of scope for this direction
 
-- Pie/donut charts or any data-visualization summaries — violate the "no
-  decoration" rule.
+- **Decorative or celebratory** chart use within the Glance hero. The two
+  hero tiles (لي / عليّ) and the parallel column lists below them remain
+  chart-free — the layout *is* the answer. (FR32 / FR33 distribution charts
+  ship as a distinct dashboard surface, not woven into the hero. See
+  "Quiet chart envelope" below.)
 - Swipe-to-settle gestures on mobile — reserved for a later usability round.
 - Color-coded contact avatars within the two columns — existing avatar tokens
   remain neutral to avoid competing with the success/error column semantics.
+
+#### Quiet chart envelope (FR32 / FR33)
+
+PRD FR32 (debt distribution across contacts — bar chart) and FR33 (debt
+distribution across denominations — pie chart) are in scope for the MVP
+dashboard. They render as a **separate, optional dashboard surface** below
+the Glance hero — not as part of the hero itself — and follow these
+restraints to preserve the "quiet financial tool" pillar:
+
+**Visual restraints (all enforced by component tokens, not optional):**
+
+- **Color:** chart segments use the existing semantic tokens (`--success`,
+  `--error`, `--accent-gold`, `--text-muted`) only. No rainbow palettes,
+  no gradient fills, no brand orange `#ff8100`. The accent gold appears
+  for at most one segment (largest contact / largest denomination) to
+  draw the eye, not as decoration.
+- **Animation:** zero entry animation. Charts render in their final state.
+  No spin-up tween, no easing. PrimeNG `Chart` `options.animation = false`.
+- **Tooltips:** plain numeric value + label, in tabular numerals, in the
+  active locale's numeral system. No emoji, no flourish copy.
+- **Legend:** plain text labels in `--text-muted`. No legend icons that
+  duplicate the segment color — text only, with a small uniform-shaped
+  swatch.
+- **Empty state:** when a user has < 2 contacts (FR32) or only debts in
+  one denomination (FR33), the chart **does not render** — a single line
+  of muted text replaces it ("Add a second contact to see distribution").
+  No empty pie chart, no zero-state placeholder visualization.
+- **RTL parity:** bar chart axes flip in RTL; pie chart starts at the
+  RTL-equivalent angle. Tested per the standard RTL visual-regression
+  suite. No directional asymmetry.
+- **Interaction:** charts are read-only. No drill-down, no click-to-filter
+  at MVP. (Drill-down can layer in post-MVP if usage data shows demand.)
+- **Performance:** charts render after the Glance hero and column lists
+  paint. Lazy-import the PrimeNG `Chart` module so it doesn't enter the
+  initial owner-shell bundle (counts against the 250 KB budget per
+  *Performance Budgets*).
+
+**Implementation note:** stories 3-6 (bar chart) and 3-7 (pie chart)
+implement these restraints as ACs. The `Quiet chart envelope` definition
+above is the single source of truth — story authors and reviewers refer
+back to it rather than reinterpreting "no decoration" per chart.
 
 ## User Journey Flows
 
@@ -3177,7 +3222,8 @@ These budgets are tracked in CI and gate release:
 | **CLS (Cumulative Layout Shift)** | < 0.1 | Every route |
 | **FCP (First Contentful Paint)** | < 1.8s on Slow 4G | Glance |
 | **TTFB (Time to First Byte)** | < 800ms | Authenticated API calls |
-| **Initial JS bundle** | < 180KB gzipped | Main entry |
+| **Initial JS bundle — public-statement** | < 180KB gzipped (matches NFR-P1 public + ADR-024) | `apps/public-statement` entry |
+| **Initial JS bundle — owner auth-shell** | < 250KB gzipped (matches NFR-P1 owner) | `apps/owner-workspace` entry |
 | **Route-level JS (lazy)** | < 60KB gzipped per route | Each lazy route |
 | **Font total (woff2)** | < 120KB total | Tajawal + Inter subset |
 
