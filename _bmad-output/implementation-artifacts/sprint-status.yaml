@@ -1,0 +1,170 @@
+# generated: 2026-04-26
+# last_updated: 2026-04-26
+# project: Faktuboh
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-04-26
+last_updated: 2026-04-26
+project: Faktuboh
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  # Epic 0: Platform Foundation
+  epic-0: in-progress
+  0-1-backend-solution-scaffold: ready-for-dev
+  0-2-angular-two-target-workspace: ready-for-dev
+  0-3-auth0-tenant-provisioning: ready-for-dev
+  0-4-rfc-9457-problem-details-middleware: ready-for-dev
+  0-5-idempotency-key-middleware: ready-for-dev
+  0-6-ibitemporal-interceptor-and-migrationservice: ready-for-dev
+  0-7-processingactivity-ambient-context: ready-for-dev
+  0-8-netarchtest-fitness-tests-hard-gates: ready-for-dev
+  0-9-github-actions-ci-cd-with-oidc: ready-for-dev
+  0-10-azure-infrastructure-provisioned: ready-for-dev
+  0-11-app-insights-otel-traceid-correlation: ready-for-dev
+  0-12-nfr-a9-rtl-acceptance-gate-harness: ready-for-dev
+  0-13-nfr-sc4-load-test-baseline-harness: ready-for-dev
+  0-14-phase-a-telemetry-primitive: ready-for-dev
+  0-15-compound-journal-entry-interface-seam: ready-for-dev
+  0-16-mutation-testing-on-domain-layer: ready-for-dev
+  0-17-cost-circuit-breaker-baseline: ready-for-dev
+  epic-0-retrospective: optional
+
+  # Epic 1: First-Run Shell & Identity
+  epic-1: in-progress
+  1-1-bilingual-shell-design-tokens-rtl-pipeline: ready-for-dev
+  1-2-user-registration-auth0-hosted-flow: ready-for-dev
+  1-3-user-login-language-selection: ready-for-dev
+  1-4-password-reset-auth0: ready-for-dev
+  1-5-profile-view-and-edit: ready-for-dev
+  1-6-legal-disclaimer-display: ready-for-dev
+  1-7-account-deletion-gdpr-erasure: ready-for-dev
+  1-8-empty-glance-skeleton-activation-nudge: ready-for-dev
+  1-9-phase-1-component-api-design-system-library: ready-for-dev
+  1-10-accessibility-ci-gates: ready-for-dev
+  1-11-performance-budget-visual-regression-ci-gates: ready-for-dev
+  epic-1-retrospective: optional
+
+  # Epic 2: Contacts — Know Your Counterparties (First Slice)
+  epic-2: in-progress
+  2-1-contacts-create-opening-balance: ready-for-dev
+  2-2-edit-existing-contact: ready-for-dev
+  2-3-delete-contact-with-outstanding-balance-guard: ready-for-dev
+  2-4-list-contacts-with-per-denomination-balance-summary: ready-for-dev
+  2-5-search-and-filter-contacts-by-name: ready-for-dev
+  epic-2-retrospective: optional
+
+  # Epic 3: Record Debts, See the Glance & Export
+  epic-3: in-progress
+  3-1-record-new-debt: ready-for-dev
+  3-2-edit-debt-with-audit-preservation: ready-for-dev
+  3-3-delete-debt-with-audit-preservation: ready-for-dev
+  3-4-per-contact-history-with-date-range-filter-and-previous-balance-rollup: ready-for-dev
+  3-5-full-glance-populated-with-direction-6-segmented-summary: ready-for-dev
+  3-6-dashboard-bar-chart-distribution-across-contacts: ready-for-dev
+  3-7-dashboard-pie-chart-distribution-across-denominations: ready-for-dev
+  3-8-user-visible-audit-trail-surface: ready-for-dev
+  3-9-csv-export-with-rtl-column-order-and-utf-8-bom: ready-for-dev
+  3-10-layer-in-netarchtest-2-slice-isolation-and-4-no-iaggregateroot: ready-for-dev
+  3-11-openapi-drift-gate-baseline: ready-for-dev
+  epic-3-retrospective: optional
+
+  # Epic 4: Viral Loop MVP — Statement, Share & Confirm
+  epic-4: in-progress
+  4-1-capability-token-scheme-with-constant-time-response: ready-for-dev
+  4-2-apps-public-statement-as-distinct-angular-build-target: ready-for-dev
+  4-3-180kb-gz-bundle-budget-with-ssr-fallback-documented: ready-for-dev
+  4-4-generate-statement-html-shareable-link: ready-for-dev
+  4-5-public-statementview-renders-without-account: ready-for-dev
+  4-6-recipient-confirm-button-timestamps-agreement: ready-for-dev
+  4-7-owner-sees-passive-last-confirmation-date-per-contact: ready-for-dev
+  4-8-signup-cta-designed-as-primary-ux-with-funnel-instrumentation: ready-for-dev
+  4-9-token-rate-limiting-20-links-hour-user-afd-edge-rule: ready-for-dev
+  4-10-token-cryptographic-generation-with-property-tests: ready-for-dev
+  4-11-epic-4-cost-circuit-breaker-ar-050: ready-for-dev
+  4-12-constant-time-response-timing-test-silent-failure-guard: ready-for-dev
+  4-13-k6-public-statement-throughput-harness: ready-for-dev
+  4-14-capability-token-replay-across-cache-boundary-staged-test: ready-for-dev
+  4-15-public-spa-locale-toggle-disclaimer: ready-for-dev
+  epic-4-retrospective: optional
+
+  # Epic 5: Debt Transfer Between Parties
+  epic-5: in-progress
+  5-1-transfer-flow-ui-with-mandatory-review-dialog: ready-for-dev
+  5-2-atomic-compound-journal-entry-transfer: ready-for-dev
+  5-3-auditbadge-component-with-bidirectional-navigation: ready-for-dev
+  5-4-transfer-history-view: ready-for-dev
+  5-5-partial-transfer-support: ready-for-dev
+  epic-5-retrospective: optional
+
+  # Epic 6: Currency & Metal Exchange with Locked Rates
+  epic-6: in-progress
+  6-1-hourly-rate-feed-ingestion-with-gold-as-base-unit: ready-for-dev
+  6-2-dual-provider-redundancy-with-automatic-failover: ready-for-dev
+  6-3-view-current-system-rate-pre-confirmation: ready-for-dev
+  6-4-exchange-operation-with-locked-rate-and-user-override: ready-for-dev
+  6-5-view-historical-exchange-rate-on-past-operations: ready-for-dev
+  6-6-denomination-integrity-enforcement: ready-for-dev
+  6-7-historical-rate-storage-for-audit: ready-for-dev
+  6-8-rate-freshness-sla-banner-and-disable: ready-for-dev
+  6-9-wiremock-cassette-harness-for-feed-scenario-tests: ready-for-dev
+  epic-6-retrospective: optional
+
+  # Epic 7: Real-Time Notifications, Share Nudges, Fraud Reporting & Link Management
+  epic-7: in-progress
+  7-1-signalr-hub-infrastructure: ready-for-dev
+  7-2-real-time-notification-on-counterparty-confirmation: ready-for-dev
+  7-3-manage-and-revoke-statement-links: ready-for-dev
+  7-4-share-nudge-after-first-3-debts-per-contact: ready-for-dev
+  7-5-share-nudge-7-day-unshared-staleness: ready-for-dev
+  7-6-share-nudge-material-threshold-balance-crossing: ready-for-dev
+  7-7-recipient-fraud-report-affordance: ready-for-dev
+  epic-7-retrospective: optional
+
+  # Epic 8: Platform Operations, Admin & Operational Safety Jobs
+  epic-8: in-progress
+  8-1-admin-dashboard-with-platform-metrics: ready-for-dev
+  8-2-freemium-threshold-configuration-ui: ready-for-dev
+  8-3-grandfathering-rules-management: ready-for-dev
+  8-4-admin-investigation-and-flagging: ready-for-dev
+  8-5-admin-suspend-statement-link-generation: ready-for-dev
+  8-6-freemium-limit-enforcement-ships-disabled: ready-for-dev
+  8-7-daily-balance-integrity-wolverine-job: ready-for-dev
+  8-8-restore-under-pressure-tabletop-rehearsal: ready-for-dev
+  8-9-cross-jurisdictional-legal-hold-drill: ready-for-dev
+  8-10-secrets-rotation-dry-run-auth0-and-kek: ready-for-dev
+  8-11-nfr-sc4-full-load-test-execution: ready-for-dev
+  epic-8-retrospective: optional
