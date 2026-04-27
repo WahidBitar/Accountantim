@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Faktuboh.Application\Faktuboh.Application.csproj" />
+    <ProjectReference Include="..\Faktuboh.Domain\Faktuboh.Domain.csproj" />
+    <ProjectReference Include="..\..\aspire\Faktuboh.ServiceDefaults\Faktuboh.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

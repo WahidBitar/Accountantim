@@ -1,0 +1,2644 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فاكتبوه — نظام التصميم · Faktuboh Design System</title>
+<meta name="description" content="The canonical design-system specimen for Faktuboh. Tokens, typography, components, and patterns for the Quiet Utility ledger.">
+<link rel="stylesheet" href="../ux-design-directions/styles.css">
+<style>
+  /* =========================================================
+     SPECIMEN BOOK — Page-specific styles.
+     The shared design tokens live in ../ux-design-directions/styles.css.
+     This file adds only what the specimen page itself needs.
+     ========================================================= */
+
+  html, body {
+    background: var(--surface-sunken);
+  }
+
+  body {
+    font-family: 'Tajawal', 'Inter', sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    color: var(--text-primary);
+  }
+
+  html[dir="ltr"] body {
+    font-family: 'Inter', 'Tajawal', sans-serif;
+  }
+
+  /* ---------- Canvas / container ---------- */
+  .book {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-6) var(--space-16);
+  }
+
+  @media (max-width: 720px) {
+    .book { padding: var(--space-8) var(--space-4) var(--space-10); }
+  }
+
+  /* ---------- Section frame ---------- */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-lg);
+    padding: var(--space-10) var(--space-10);
+    margin-block-end: var(--space-8);
+    position: relative;
+  }
+
+  @media (max-width: 720px) {
+    .section { padding: var(--space-6) var(--space-5); }
+  }
+
+  .section + .section { margin-block-start: 0; }
+
+  .section-head {
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: var(--space-6);
+    align-items: baseline;
+    margin-block-end: var(--space-8);
+    padding-block-end: var(--space-5);
+    border-block-end: 1px solid var(--divider);
+  }
+
+  @media (max-width: 720px) {
+    .section-head {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+
+  .section-num {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--accent-gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding-block-start: 8px;
+  }
+
+  .section-title-ar {
+    font-size: var(--text-3xl);
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-block-end: var(--space-2);
+  }
+
+  .section-title-en {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .section-lede {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    max-width: 64ch;
+    margin-block-start: var(--space-3);
+    line-height: 1.65;
+  }
+
+  /* ---------- Subheadings inside sections ---------- */
+  .sub-h {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-block-end: var(--space-3);
+    margin-block-start: var(--space-6);
+    letter-spacing: 0.02em;
+  }
+
+  .sub-h:first-child { margin-block-start: 0; }
+
+  .sub-h .en {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-inline-start: var(--space-2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Cover ---------- */
+  .cover {
+    background: var(--surface);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-lg);
+    padding: var(--space-16) var(--space-10);
+    margin-block-end: var(--space-8);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (max-width: 720px) {
+    .cover { padding: var(--space-10) var(--space-5); }
+  }
+
+  .cover::before {
+    /* faint hairline grid like a writer's notebook */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to bottom, transparent 31px, var(--divider) 31px, var(--divider) 32px, transparent 32px);
+    background-size: 100% 32px;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .cover-eyebrow {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--accent-gold);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-5);
+    position: relative;
+  }
+
+  .cover-title {
+    font-size: clamp(40px, 8vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    margin-block-end: var(--space-3);
+    position: relative;
+  }
+
+  .cover-title-en {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-2xl);
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 0;
+    margin-block-end: var(--space-6);
+    position: relative;
+  }
+
+  .cover-tag {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    max-width: 42ch;
+    line-height: 1.65;
+    position: relative;
+    margin-block-end: var(--space-8);
+  }
+
+  .cover-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-5);
+    padding-block-start: var(--space-6);
+    border-block-start: 1px solid var(--divider);
+    position: relative;
+  }
+
+  .cover-meta-item .label {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: var(--space-1);
+  }
+
+  .cover-meta-item .value {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* ---------- Heritage panel (BRAND-ONLY space) ---------- */
+  .heritage {
+    background: var(--brand-ink);
+    color: #E9D9A8;
+    padding: var(--space-12) var(--space-10);
+    border-radius: var(--radius-lg);
+    margin-block-end: var(--space-8);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  @media (max-width: 720px) {
+    .heritage { padding: var(--space-8) var(--space-5); }
+  }
+
+  .heritage::before {
+    /* faint radial gold glow */
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(circle at center, rgba(212, 168, 75, 0.08), transparent 60%);
+    pointer-events: none;
+  }
+
+  .heritage-eyebrow {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: #D4A84B;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-6);
+    position: relative;
+  }
+
+  .heritage-mark {
+    width: 96px; height: 96px;
+    border-radius: var(--radius-full);
+    background: #1a1a1d;
+    border: 2px solid #D4A84B;
+    color: #D4A84B;
+    display: grid;
+    place-items: center;
+    margin: 0 auto var(--space-6);
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    position: relative;
+    box-shadow: 0 0 60px rgba(212, 168, 75, 0.18);
+  }
+
+  .heritage-quote {
+    font-size: clamp(22px, 3.4vw, 32px);
+    font-weight: 600;
+    color: #F1E4BC;
+    line-height: 1.7;
+    max-width: 28ch;
+    margin: 0 auto var(--space-5);
+    position: relative;
+    letter-spacing: 0.005em;
+  }
+
+  .heritage-cite {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-xs);
+    color: #B89656;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-8);
+    position: relative;
+  }
+
+  .heritage-name {
+    font-size: var(--text-lg);
+    color: #D4A84B;
+    font-weight: 700;
+    margin-block-end: var(--space-2);
+    position: relative;
+  }
+
+  .heritage-tag {
+    font-size: var(--text-base);
+    color: #C0A668;
+    position: relative;
+    margin-block-end: var(--space-8);
+  }
+
+  .heritage-rule {
+    width: 60px;
+    height: 1px;
+    background: #D4A84B;
+    margin: 0 auto var(--space-6);
+    opacity: 0.6;
+    position: relative;
+  }
+
+  .heritage-disclaimer {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-xs);
+    color: #8B7449;
+    max-width: 56ch;
+    margin: 0 auto;
+    line-height: 1.7;
+    position: relative;
+    text-align: center;
+  }
+
+  .heritage-disclaimer code {
+    font-family: 'Inter', monospace;
+    background: rgba(212, 168, 75, 0.1);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: #D4A84B;
+  }
+
+  /* ---------- Brand vs Product separation ---------- */
+  .separation {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+  }
+
+  @media (max-width: 720px) {
+    .separation { grid-template-columns: 1fr; }
+  }
+
+  .sep-card {
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+    border: 1px solid var(--divider);
+  }
+
+  .sep-card.brand {
+    background: var(--brand-ink);
+    color: #E9D9A8;
+    border-color: #2a2a2d;
+  }
+
+  .sep-card.product {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+
+  .sep-card .label {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-3);
+  }
+
+  .sep-card.brand .label { color: #D4A84B; }
+  .sep-card.product .label { color: var(--accent-gold); }
+
+  .sep-card h4 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-block-end: var(--space-3);
+  }
+
+  .sep-card p {
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    color: inherit;
+    opacity: 0.85;
+  }
+
+  .sep-swatches {
+    display: flex;
+    gap: var(--space-2);
+    margin-block-start: var(--space-5);
+  }
+
+  .sep-swatch {
+    width: 56px; height: 56px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    font-family: 'Inter', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+
+  /* ---------- Color tokens ---------- */
+  .color-mode {
+    margin-block-end: var(--space-8);
+  }
+
+  .color-mode + .color-mode {
+    margin-block-start: var(--space-8);
+    padding-block-start: var(--space-8);
+    border-block-start: 1px solid var(--divider);
+  }
+
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .swatch {
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .swatch-color {
+    height: 96px;
+    position: relative;
+  }
+
+  .swatch-meta {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .swatch-name {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .swatch-token {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-block-start: 2px;
+  }
+
+  .swatch-hex {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-block-start: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .swatch-role {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin-block-start: var(--space-2);
+    line-height: 1.5;
+  }
+
+  /* dark mode preview frame */
+  .preview-dark {
+    background: #0F0F11;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    border: 1px solid #27272A;
+  }
+
+  .preview-dark .swatch {
+    background: #1A1A1D;
+    border-color: #27272A;
+  }
+  .preview-dark .swatch-name { color: #F4F4F5; }
+  .preview-dark .swatch-token, .preview-dark .swatch-hex { color: #71717A; }
+  .preview-dark .swatch-role { color: #A1A1AA; }
+
+  /* ---------- Typography specimen ---------- */
+  .specimen-row {
+    padding: var(--space-5) 0;
+    border-block-end: 1px solid var(--divider);
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: var(--space-6);
+    align-items: baseline;
+  }
+
+  .specimen-row:last-child { border-block-end: none; }
+
+  .specimen-label {
+    font-family: 'Inter', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .specimen-label .num {
+    display: block;
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-block-start: 2px;
+  }
+
+  .specimen-text {
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .display-script {
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  .display-latin {
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* tabular numerals proof grid */
+  .tnum-proof {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+    margin-block-start: var(--space-6);
+  }
+
+  .tnum-proof-title {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-block-end: var(--space-4);
+  }
+
+  .tnum-proof table {
+    width: 100%;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+    font-size: var(--text-xl);
+    font-weight: 600;
+  }
+
+  .tnum-proof th, .tnum-proof td {
+    padding: var(--space-2) var(--space-3);
+    text-align: end;
+  }
+
+  .tnum-proof th {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .tnum-proof th:first-child, .tnum-proof td:first-child {
+    text-align: start;
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .tnum-proof td {
+    color: var(--text-primary);
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .tnum-proof tr:last-child td { border-block-end: none; }
+
+  /* font-pair card */
+  .pair-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    margin-block-end: var(--space-6);
+  }
+
+  @media (max-width: 720px) { .pair-card { grid-template-columns: 1fr; } }
+
+  .pair {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+  }
+
+  .pair-eyebrow {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-3);
+  }
+
+  .pair-name {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    margin-block-end: var(--space-2);
+  }
+
+  .pair-meta {
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-block-end: var(--space-4);
+  }
+
+  .pair-sample {
+    font-size: var(--text-2xl);
+    line-height: 1.5;
+    color: var(--text-primary);
+  }
+
+  /* ---------- Spacing ruler ---------- */
+  .spacing-ruler {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .ruler-row {
+    display: grid;
+    grid-template-columns: 80px 80px 1fr;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-2) 0;
+  }
+
+  .ruler-token {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ruler-px {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ruler-bar {
+    height: 12px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  /* ---------- Radii / Shadows ---------- */
+  .specimen-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .radius-card, .shadow-card {
+    background: var(--surface-sunken);
+    padding: var(--space-5);
+    text-align: center;
+  }
+
+  .radius-block {
+    width: 64px;
+    height: 64px;
+    background: var(--primary);
+    margin: 0 auto var(--space-3);
+  }
+
+  .shadow-card {
+    background: transparent;
+    padding: var(--space-6);
+  }
+
+  .shadow-block {
+    width: 80px;
+    height: 80px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    margin: 0 auto var(--space-3);
+  }
+
+  .specimen-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .specimen-code {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    margin-block-start: 2px;
+  }
+
+  /* ---------- Components gallery ---------- */
+  .gallery-row {
+    padding: var(--space-6) 0;
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .gallery-row:first-child { padding-block-start: 0; }
+  .gallery-row:last-child { border-block-end: none; padding-block-end: 0; }
+
+  .gallery-grid {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    align-items: center;
+    margin-block-start: var(--space-3);
+  }
+
+  .gallery-meta {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-block-start: var(--space-3);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+  }
+
+  /* ---------- Form preview ---------- */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-width: 360px;
+  }
+
+  .field label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .field input {
+    font-family: inherit;
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--divider-strong);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--text-primary);
+    min-height: 44px;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-soft);
+  }
+
+  .field .help {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  /* ---------- Pattern preview: The Glance ---------- */
+  .glance-preview {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-block-start: var(--space-3);
+  }
+
+  .glance-heroes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-block-end: var(--space-5);
+  }
+
+  @media (max-width: 600px) { .glance-heroes { grid-template-columns: 1fr; } }
+
+  .glance-hero {
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    border: 1px solid;
+  }
+
+  .glance-hero.receivable {
+    background: var(--success-soft);
+    border-color: var(--success);
+  }
+
+  .glance-hero.payable {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+  }
+
+  .glance-label {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    margin-block-end: var(--space-2);
+  }
+
+  .receivable .glance-label { color: var(--success); }
+  .payable .glance-label { color: var(--danger); }
+
+  .glance-amount {
+    font-size: var(--text-4xl);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  .receivable .glance-amount { color: var(--success); }
+  .payable .glance-amount { color: var(--danger); }
+
+  .glance-amount .currency {
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-inline-start: var(--space-1);
+  }
+
+  .glance-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  @media (max-width: 600px) { .glance-cols { grid-template-columns: 1fr; } }
+
+  .glance-col {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--divider);
+    overflow: hidden;
+  }
+
+  .glance-col-h {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-block-end: 1px solid var(--divider);
+    background: var(--surface-sunken);
+  }
+
+  .debt-row {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .debt-row:last-child { border-block-end: none; }
+
+  .debt-row .ca {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-full);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: var(--text-xs);
+  }
+
+  .debt-row .info { min-width: 0; }
+  .debt-row .name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .debt-row .meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+  .debt-row .amt {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .glance-col.receivable .amt { color: var(--success); }
+  .glance-col.payable .amt { color: var(--danger); }
+
+  /* ---------- Voice & language samples ---------- */
+  .voice-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+
+  .voice-table th, .voice-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: start;
+    vertical-align: top;
+    border-block-end: 1px solid var(--divider);
+  }
+
+  .voice-table th {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--surface-sunken);
+  }
+
+  .voice-table tr:last-child td { border-block-end: none; }
+
+  .voice-good {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .voice-bad {
+    color: var(--text-muted);
+    text-decoration: line-through;
+  }
+  .voice-good::before {
+    content: '✓ ';
+    color: var(--success);
+    font-weight: 700;
+    margin-inline-end: 4px;
+  }
+  .voice-bad::before {
+    content: '✗ ';
+    color: var(--danger);
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-block;
+    margin-inline-end: 4px;
+  }
+
+  /* ---------- Anti-pattern block ---------- */
+  .anti-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .anti-card {
+    background: var(--surface-sunken);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    position: relative;
+  }
+
+  .anti-card::before {
+    content: '✗';
+    position: absolute;
+    top: var(--space-4);
+    inset-inline-end: var(--space-4);
+    color: var(--danger);
+    font-weight: 800;
+    font-size: var(--text-lg);
+    width: 26px; height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-full);
+    background: var(--danger-soft);
+  }
+
+  .anti-card h5 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-block-end: var(--space-2);
+    padding-inline-end: var(--space-8);
+  }
+
+  .anti-card p {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ---------- PrimeNG mapping table ---------- */
+  .map-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .map-table th, .map-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: start;
+    border-block-end: 1px solid var(--divider);
+    vertical-align: top;
+  }
+  .map-table th {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    background: var(--surface-sunken);
+    font-weight: 700;
+  }
+  .map-table tr:last-child td { border-block-end: none; }
+  .map-table code {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    background: var(--primary-soft);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ---------- Motion table ---------- */
+  .motion-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+  }
+  .motion-table th, .motion-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: start;
+    border-block-end: 1px solid var(--divider);
+  }
+  .motion-table th {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    background: var(--surface-sunken);
+    font-weight: 700;
+  }
+  .motion-table .ms {
+    font-family: 'Inter', monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .motion-table tr:last-child td { border-block-end: none; }
+
+  /* ---------- Bilingual parity strip ---------- */
+  .parity {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-block-start: var(--space-3);
+  }
+
+  @media (max-width: 720px) { .parity { grid-template-columns: 1fr; } }
+
+  .parity-side {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    overflow: hidden;
+  }
+
+  .parity-side .label {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--accent-gold);
+    letter-spacing: 0.15em;
+    margin-block-end: var(--space-4);
+    text-transform: uppercase;
+  }
+
+  /* the LTR side flips its dir locally */
+  .parity-side.ltr {
+    direction: ltr;
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+  }
+  .parity-side.rtl {
+    direction: rtl;
+    text-align: right;
+    font-family: 'Tajawal', sans-serif;
+  }
+
+  /* ---------- Footer / colophon ---------- */
+  .colophon {
+    text-align: center;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: var(--text-xs);
+    padding-block: var(--space-8);
+    line-height: 1.8;
+  }
+
+  .colophon-rule {
+    width: 40px;
+    height: 1px;
+    background: var(--accent-gold);
+    margin: 0 auto var(--space-4);
+    opacity: 0.6;
+  }
+
+  .colophon a { color: var(--primary); }
+
+  /* ---------- TOC ---------- */
+  .toc {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    padding: var(--space-5) var(--space-6);
+    margin-block-end: var(--space-8);
+  }
+  .toc-title {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--accent-gold);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-block-end: var(--space-4);
+    font-weight: 700;
+  }
+  .toc-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-2) var(--space-5);
+    list-style: none;
+  }
+  .toc-list a {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    transition: color 150ms ease;
+    align-items: baseline;
+  }
+  .toc-list a:hover { color: var(--primary); }
+  .toc-list .num {
+    font-family: 'Inter', monospace;
+    font-size: var(--text-xs);
+    color: var(--accent-gold);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---------- Inline note callout ---------- */
+  .callout {
+    background: var(--accent-gold-soft);
+    border-inline-start: 3px solid var(--accent-gold);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    line-height: 1.7;
+    margin-block: var(--space-5);
+  }
+  .callout strong {
+    color: var(--accent-gold);
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    letter-spacing: 0.12em;
+    display: block;
+    margin-block-end: var(--space-2);
+    font-weight: 700;
+  }
+
+  /* a compact contrast badge */
+  .ratio {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-family: 'Inter', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .ratio.aaa { background: var(--success-soft); color: var(--success); }
+  .ratio.aa  { background: var(--primary-soft); color: var(--primary); }
+  .ratio.fail{ background: var(--danger-soft); color: var(--danger); }
+
+  .contrast-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface-sunken);
+    border-radius: var(--radius-md);
+    margin-block-end: var(--space-2);
+  }
+  .contrast-row .pair {
+    background: transparent;
+    padding: 0;
+  }
+
+  /* utility */
+  .stack-sm > * + * { margin-block-start: var(--space-3); }
+  .stack-md > * + * { margin-block-start: var(--space-5); }
+  .row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+</style>
+</head>
+
+<body>
+
+<main class="book">
+
+  <!-- ============================================================
+       COVER
+       ============================================================ -->
+  <header class="cover">
+    <div class="cover-eyebrow">نظام التصميم · Design System v1.0</div>
+    <h1 class="cover-title">فاكتبوه</h1>
+    <div class="cover-title-en">Faktuboh — the quiet ledger</div>
+    <p class="cover-tag">
+      دفتر هادئ يَزِنُ ما لك وما عليك بدقة الميزان وثبات الورق.
+      <br>
+      A specimen of the visual language behind a debt ledger that values
+      <em>clarity over celebration</em>, and faithful representation over delight.
+    </p>
+
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <div class="label">Foundation</div>
+        <div class="value">PrimeNG v21 · Aura preset</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Layout</div>
+        <div class="value">Tailwind · logical properties</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Direction</div>
+        <div class="value">RTL primary · LTR mirrored</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Themes</div>
+        <div class="value">Light · Dark (first-class)</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Aligned with</div>
+        <div class="value">UX Spec Step 14 · Direction 6</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOC -->
+  <nav class="toc" aria-label="Contents">
+    <div class="toc-title">المحتويات · Contents</div>
+    <ul class="toc-list">
+      <li><a href="#identity"><span class="num">01</span><span>الهوية · Identity</span></a></li>
+      <li><a href="#heritage"><span class="num">02</span><span>الإرث · Heritage</span></a></li>
+      <li><a href="#separation"><span class="num">03</span><span>فصل العلامة · Brand vs Product</span></a></li>
+      <li><a href="#color"><span class="num">04</span><span>الألوان · Color</span></a></li>
+      <li><a href="#typography"><span class="num">05</span><span>الطباعة · Typography</span></a></li>
+      <li><a href="#numerics"><span class="num">06</span><span>الأرقام الجدولية · Numerics</span></a></li>
+      <li><a href="#spacing"><span class="num">07</span><span>المسافات · Spacing</span></a></li>
+      <li><a href="#shape"><span class="num">08</span><span>الزوايا والظلال · Shape & Elevation</span></a></li>
+      <li><a href="#components"><span class="num">09</span><span>المكونات · Components</span></a></li>
+      <li><a href="#patterns"><span class="num">10</span><span>الأنماط · Patterns</span></a></li>
+      <li><a href="#voice"><span class="num">11</span><span>الصوت · Voice</span></a></li>
+      <li><a href="#motion"><span class="num">12</span><span>الحركة · Motion</span></a></li>
+      <li><a href="#a11y"><span class="num">13</span><span>الوصول · Accessibility</span></a></li>
+      <li><a href="#anti"><span class="num">14</span><span>ما نتجنّبه · Anti-patterns</span></a></li>
+      <li><a href="#mapping"><span class="num">15</span><span>الخريطة · PrimeNG Mapping</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- ============================================================
+       § 01 — IDENTITY
+       ============================================================ -->
+  <section class="section" id="identity">
+    <header class="section-head">
+      <div class="section-num">§ 01</div>
+      <div>
+        <h2 class="section-title-ar">الهوية الأساسية</h2>
+        <div class="section-title-en">Identity</div>
+        <p class="section-lede">
+          فاكتبوه أداة تذكر ما تنساه: من أَخَذَ، ومن أعطى، وبأيّ عملة، وفي أيّ تاريخ.
+          الهوية البصرية تخدم وعداً واحداً — أن تطمئنّ وأنت تنظر.
+        </p>
+      </div>
+    </header>
+
+    <div class="stack-md">
+      <div>
+        <h3 class="sub-h">الوعد الإنساني <span class="en">Human Promise</span></h3>
+        <p style="font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.65; max-width: 60ch;">
+          «نحن نتذكّر، فلا تُجهد ذاكرتك.» <br>
+          <span style="font-family: 'Inter', sans-serif; font-size: var(--text-base);">
+            <em>"We remember, so you don't have to."</em>
+          </span>
+        </p>
+      </div>
+
+      <div>
+        <h3 class="sub-h">المبادئ التصميمية الخمسة <span class="en">Five Design Pillars</span></h3>
+        <ol style="padding-inline-start: var(--space-5); color: var(--text-primary); line-height: 1.9;">
+          <li><strong>الوضوح هو المنتج.</strong> Clarity is the product. Every screen must privilege legibility of financial position over decoration.</li>
+          <li><strong>صفر تردّد للفعل اليومي.</strong> Zero hesitation for daily actions. Measure success in confidence, not tap count.</li>
+          <li><strong>شفافية مريحة، لا مواجهة.</strong> Comfortable transparency, never confrontation. Shared statements feel like a friendly receipt, not a demand letter.</li>
+          <li><strong>التمثيل الأمين لما سُجِّل.</strong> Faithful representation. Any divergence between recorded and displayed is the only unrecoverable failure.</li>
+          <li><strong>الهدوء يدلّ على الثقة.</strong> Stability signals trust. Motion is for navigation; numbers do not animate.</li>
+        </ol>
+      </div>
+
+      <div class="callout">
+        <strong>Note · ملاحظة</strong>
+        This document is the canonical reference for visual decisions. If a value here conflicts with an
+        ad-hoc choice in code or comp, this document wins. Updates flow back through the UX Specification (Step 8 + Step 14).
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 02 — HERITAGE (the one warm moment)
+       ============================================================ -->
+  <section class="section" id="heritage" style="padding: 0; overflow: hidden; border: 0;">
+    <div class="heritage">
+      <div class="heritage-eyebrow">§ 02 · الإرث · Heritage</div>
+      <div class="heritage-mark" aria-hidden="true">ف</div>
+      <p class="heritage-quote">
+        ﴿ يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا تَدَايَنتُم بِدَيْنٍ إِلَىٰ أَجَلٍ مُّسَمًّى فَاكْتُبُوهُ ﴾
+      </p>
+      <div class="heritage-cite">سورة البقرة · آية 282</div>
+      <div class="heritage-name">فاكتبوه</div>
+      <div class="heritage-tag">صغيراً أو كبيراً إلى أجلِه</div>
+      <div class="heritage-rule"></div>
+      <p class="heritage-disclaimer">
+        This panel lives in the <strong>brand-only space</strong> — splash, marketing site, app icon.
+        Its colors (<code>#0B0B0D</code> ink, <code>#D4A84B</code> heritage gold, <code>#ff8100</code>
+        write-orange) are <strong>never</strong> referenced inside any UI component, state, or copy
+        styling. The product UI breathes a separate, calmer palette. This separation is a hard constraint.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 03 — BRAND vs PRODUCT
+       ============================================================ -->
+  <section class="section" id="separation">
+    <header class="section-head">
+      <div class="section-num">§ 03</div>
+      <div>
+        <h2 class="section-title-ar">فصل العلامة عن المنتج</h2>
+        <div class="section-title-en">Brand-only vs Product UI</div>
+        <p class="section-lede">
+          The classical heritage palette and the calm interactive palette occupy two non-overlapping spaces.
+          Crossing them dilutes meaning and breaks accessibility.
+        </p>
+      </div>
+    </header>
+
+    <div class="separation">
+      <div class="sep-card brand">
+        <div class="label">Brand-only · 02 surfaces</div>
+        <h4>الميراث · Heritage</h4>
+        <p>
+          Splash, marketing site, app icon, About page. Carries Quranic provenance and classical
+          Arabic calligraphy. May use saturated heritage gold and the writing-trail orange.
+          Lives outside the running app's component tokens.
+        </p>
+        <div class="sep-swatches">
+          <div class="sep-swatch" style="background: #0B0B0D;">#0B0B0D</div>
+          <div class="sep-swatch" style="background: #D4A84B;">#D4A84B</div>
+          <div class="sep-swatch" style="background: #ff8100;">#ff8100</div>
+        </div>
+      </div>
+
+      <div class="sep-card product">
+        <div class="label">Product · all in-app screens</div>
+        <h4>الواجهة · Interface</h4>
+        <p>
+          Dashboard, statements, recording, settings — every screen the user touches daily.
+          Calm Deep Teal carries interactive meaning. Warm Gold appears only where attention
+          is genuinely warranted (a due-today marker, a settled receipt). Grayscale carries 75%+ of the UI.
+        </p>
+        <div class="sep-swatches">
+          <div class="sep-swatch" style="background: #0F766E;">#0F766E</div>
+          <div class="sep-swatch" style="background: #B45309;">#B45309</div>
+          <div class="sep-swatch" style="background: #18181B;">#18181B</div>
+          <div class="sep-swatch" style="background: #FAFAFA; color: #18181B; text-shadow: none;">#FAFAFA</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-block-start: var(--space-6);">
+      <strong>Lint rule · قاعدة فحص</strong>
+      Hex literals from the brand-only swatches must never appear in any file under <code style="font-family: 'Inter', monospace; background: var(--primary-soft); color: var(--primary); padding: 1px 6px; border-radius: 4px;">apps/owner/**</code>
+      or <code style="font-family: 'Inter', monospace; background: var(--primary-soft); color: var(--primary); padding: 1px 6px; border-radius: 4px;">apps/public-statement/**</code>.
+      All UI colors must come from <code style="font-family: 'Inter', monospace; background: var(--primary-soft); color: var(--primary); padding: 1px 6px; border-radius: 4px;">var(--*)</code> tokens defined here.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 04 — COLOR
+       ============================================================ -->
+  <section class="section" id="color">
+    <header class="section-head">
+      <div class="section-num">§ 04</div>
+      <div>
+        <h2 class="section-title-ar">نظام الألوان</h2>
+        <div class="section-title-en">Color System · Light & Dark</div>
+        <p class="section-lede">
+          Deep Teal is the sole bearer of interactive meaning (buttons, links, focus, active).
+          Warm Gold is rationed for moments of attention. Grayscale carries everything else.
+          Color never works alone — always with icon or label.
+        </p>
+      </div>
+    </header>
+
+    <div class="color-mode">
+      <h3 class="sub-h">الوضع الفاتح <span class="en">Light Mode · Default</span></h3>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0F766E;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Primary · أساسي</div>
+            <div class="swatch-token">--primary</div>
+            <div class="swatch-hex">#0F766E</div>
+            <div class="swatch-role">Buttons, active nav, focus ring, brand interactives</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #0D9488;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Primary Hover</div>
+            <div class="swatch-token">--primary-hover</div>
+            <div class="swatch-hex">#0D9488</div>
+            <div class="swatch-role">Pressed/hover states only</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #B45309;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Accent Gold · ذهبي</div>
+            <div class="swatch-token">--accent-gold</div>
+            <div class="swatch-hex">#B45309</div>
+            <div class="swatch-role">Highlighted amounts, gold-tracking, due-today markers</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FFFFFF; border: 1px solid var(--divider);"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Surface · سطح</div>
+            <div class="swatch-token">--surface</div>
+            <div class="swatch-hex">#FFFFFF</div>
+            <div class="swatch-role">App canvas, card backgrounds</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #FAFAFA;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Surface Raised</div>
+            <div class="swatch-token">--surface-raised</div>
+            <div class="swatch-hex">#FAFAFA</div>
+            <div class="swatch-role">Slight elevation, alt rows</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #F4F4F5;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Surface Sunken</div>
+            <div class="swatch-token">--surface-sunken</div>
+            <div class="swatch-hex">#F4F4F5</div>
+            <div class="swatch-role">Page background, hover wash</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #18181B;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Text Primary</div>
+            <div class="swatch-token">--text-primary</div>
+            <div class="swatch-hex">#18181B</div>
+            <div class="swatch-role">Body, headings, amounts</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #52525B;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Text Secondary</div>
+            <div class="swatch-token">--text-secondary</div>
+            <div class="swatch-hex">#52525B</div>
+            <div class="swatch-role">Metadata, captions</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #71717A;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Text Muted</div>
+            <div class="swatch-token">--text-muted</div>
+            <div class="swatch-hex">#71717A</div>
+            <div class="swatch-role">Placeholders, timestamps</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #15803D;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Success · لي</div>
+            <div class="swatch-token">--success</div>
+            <div class="swatch-hex">#15803D</div>
+            <div class="swatch-role">Receivables, settled, positive confirmations</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #D97706;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Warning</div>
+            <div class="swatch-token">--warning</div>
+            <div class="swatch-hex">#D97706</div>
+            <div class="swatch-role">Due-soon (calm amber, not alarm red)</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #B91C1C;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Danger · عليّ</div>
+            <div class="swatch-token">--danger</div>
+            <div class="swatch-hex">#B91C1C</div>
+            <div class="swatch-role">Payables, overdue, destructive</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: #E4E4E7;"></div>
+          <div class="swatch-meta">
+            <div class="swatch-name">Divider</div>
+            <div class="swatch-token">--divider</div>
+            <div class="swatch-hex">#E4E4E7</div>
+            <div class="swatch-role">Borders, separators, hairlines</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-mode">
+      <h3 class="sub-h">الوضع الداكن <span class="en">Dark Mode · First-Class</span></h3>
+      <div class="preview-dark">
+        <div class="swatch-grid">
+          <div class="swatch">
+            <div class="swatch-color" style="background: #2DD4BF;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Primary</div>
+              <div class="swatch-token">--primary</div>
+              <div class="swatch-hex">#2DD4BF</div>
+              <div class="swatch-role">Lighter teal for dark canvases</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #F59E0B;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Accent Gold</div>
+              <div class="swatch-token">--accent-gold</div>
+              <div class="swatch-hex">#F59E0B</div>
+              <div class="swatch-role">Brighter on dark for visibility</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #0F0F11;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Surface</div>
+              <div class="swatch-token">--surface</div>
+              <div class="swatch-hex">#0F0F11</div>
+              <div class="swatch-role">Near-black canvas (not pure)</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #1A1A1D;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Surface Raised</div>
+              <div class="swatch-token">--surface-raised</div>
+              <div class="swatch-hex">#1A1A1D</div>
+              <div class="swatch-role">Cards, panels</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #F4F4F5;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Text Primary</div>
+              <div class="swatch-token">--text-primary</div>
+              <div class="swatch-hex">#F4F4F5</div>
+              <div class="swatch-role">Body, headings</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #4ADE80;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Success</div>
+              <div class="swatch-token">--success</div>
+              <div class="swatch-hex">#4ADE80</div>
+              <div class="swatch-role">Receivables on dark</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #F87171;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Danger</div>
+              <div class="swatch-token">--danger</div>
+              <div class="swatch-hex">#F87171</div>
+              <div class="swatch-role">Payables on dark</div>
+            </div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #27272A;"></div>
+            <div class="swatch-meta">
+              <div class="swatch-name">Divider</div>
+              <div class="swatch-token">--divider</div>
+              <div class="swatch-hex">#27272A</div>
+              <div class="swatch-role">Hairline borders</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-block-start: var(--space-8);">
+      <strong>Discipline · انضباط</strong>
+      Color marks <em>meaning</em>, not decoration. Saturated fills are forbidden in component bodies.
+      The dashboard's two hero tiles use the <em>soft</em> token (<code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--success-soft</code> / <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--danger-soft</code>) as background; the strong color appears only on the numeral and a 1px border.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 05 — TYPOGRAPHY
+       ============================================================ -->
+  <section class="section" id="typography">
+    <header class="section-head">
+      <div class="section-num">§ 05</div>
+      <div>
+        <h2 class="section-title-ar">نظام الطباعة</h2>
+        <div class="section-title-en">Typography · Tajawal & Inter</div>
+        <p class="section-lede">
+          Two typefaces, one rhythm. Tajawal carries Arabic; Inter carries Latin. They share geometric DNA
+          and the same vertical metrics, so a mixed-script line never wobbles.
+        </p>
+      </div>
+    </header>
+
+    <div class="pair-card">
+      <div class="pair">
+        <div class="pair-eyebrow">Arabic · Tajawal</div>
+        <div class="pair-name display-script">فاكتبوه</div>
+        <div class="pair-meta">Google Fonts · weights 400, 500, 700, 800</div>
+        <div class="pair-sample display-script">
+          أبجد هوّز حطّي كلمن سعفص قرشت ثخذ ضظغ
+          <br>0123456789
+        </div>
+      </div>
+
+      <div class="pair">
+        <div class="pair-eyebrow">Latin · Inter</div>
+        <div class="pair-name display-latin">Faktuboh</div>
+        <div class="pair-meta">Google Fonts · weights 400, 500, 600, 700</div>
+        <div class="pair-sample display-latin">
+          The quick brown fox jumps over the lazy dog
+          <br>0123456789
+        </div>
+      </div>
+    </div>
+
+    <h3 class="sub-h">السلّم الطباعي <span class="en">Type Scale · 9 levels, mobile-first base 16px</span></h3>
+
+    <div class="specimen-row">
+      <div class="specimen-label">5XL <span class="num">48</span></div>
+      <div class="specimen-text" style="font-size: 48px; font-weight: 700; line-height: 1;">Splash · افتتاح</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">4XL <span class="num">36</span></div>
+      <div class="specimen-text" style="font-size: 36px; font-weight: 700; line-height: 1.1;">Hero amount · رقم رئيسي</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">3XL <span class="num">30</span></div>
+      <div class="specimen-text" style="font-size: 30px; font-weight: 600; line-height: 1.2;">Page heading · عنوان الصفحة</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">2XL <span class="num">24</span></div>
+      <div class="specimen-text" style="font-size: 24px; font-weight: 600;">Section heading · عنوان القسم</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">XL <span class="num">20</span></div>
+      <div class="specimen-text" style="font-size: 20px; font-weight: 500;">Card title · عنوان البطاقة</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">LG <span class="num">18</span></div>
+      <div class="specimen-text" style="font-size: 18px; font-weight: 500;">Emphasized body · نصّ مُبرَز</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">BASE <span class="num">16</span></div>
+      <div class="specimen-text" style="font-size: 16px; font-weight: 400;">Body text — هذه هي القيمة الافتراضية للنص الأساسي. Default reading size for paragraphs.</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">SM <span class="num">14</span></div>
+      <div class="specimen-text" style="font-size: 14px; font-weight: 400;">Secondary label · بطاقة ثانوية. Used for table cells and form helper text.</div>
+    </div>
+    <div class="specimen-row">
+      <div class="specimen-label">XS <span class="num">12</span></div>
+      <div class="specimen-text" style="font-size: 12px; font-weight: 400;">Metadata · بيانات وصفية — timestamps, captions, fine print.</div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 06 — NUMERICS (proof of tabular alignment)
+       ============================================================ -->
+  <section class="section" id="numerics">
+    <header class="section-head">
+      <div class="section-num">§ 06</div>
+      <div>
+        <h2 class="section-title-ar">الأرقام الجدولية</h2>
+        <div class="section-title-en">Tabular Numerals · proof of alignment</div>
+        <p class="section-lede">
+          Every numeric surface activates <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">font-feature-settings: "tnum" 1, "lnum" 1</code>.
+          Digits across rows align perfectly regardless of width — the foundation for trustworthy ledger display.
+        </p>
+      </div>
+    </header>
+
+    <div class="tnum-proof">
+      <div class="tnum-proof-title">
+        Same column, different magnitudes — note the perfect right-edge alignment of every digit:
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Contact · جهة</th>
+            <th>USD</th>
+            <th>SAR</th>
+            <th>Gold (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ahmed</td>
+            <td>1,250.00</td>
+            <td>4,687.50</td>
+            <td>12.500</td>
+          </tr>
+          <tr>
+            <td>Fatima</td>
+            <td>89.30</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Karim</td>
+            <td>14,090.75</td>
+            <td>52,840.31</td>
+            <td>148.250</td>
+          </tr>
+          <tr>
+            <td>Omar</td>
+            <td>—</td>
+            <td>1,000,000.00</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Yusuf</td>
+            <td>3.05</td>
+            <td>11.43</td>
+            <td>0.030</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <strong>Numeral system · نظام الأرقام</strong>
+      Latin digits (0–9) throughout — never Arabic-Indic (٠–٩). This is a regional UX standard
+      validated by STC Pay, Careem Pay, and Mada reference apps. Latin digits also paste cleanly
+      into bank statements without character-encoding loss.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 07 — SPACING
+       ============================================================ -->
+  <section class="section" id="spacing">
+    <header class="section-head">
+      <div class="section-num">§ 07</div>
+      <div>
+        <h2 class="section-title-ar">المسافات والتخطيط</h2>
+        <div class="section-title-en">Spacing & Layout · 4px base</div>
+        <p class="section-lede">
+          A 4px grid aligns every gap, padding, and component height. Use the named tokens, never raw pixels.
+        </p>
+      </div>
+    </header>
+
+    <div class="spacing-ruler">
+      <div class="ruler-row">
+        <div class="ruler-token">--space-1</div>
+        <div class="ruler-px">4 px</div>
+        <div class="ruler-bar" style="width: 4px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-2</div>
+        <div class="ruler-px">8 px</div>
+        <div class="ruler-bar" style="width: 8px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-3</div>
+        <div class="ruler-px">12 px</div>
+        <div class="ruler-bar" style="width: 12px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-4</div>
+        <div class="ruler-px">16 px</div>
+        <div class="ruler-bar" style="width: 16px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-5</div>
+        <div class="ruler-px">20 px</div>
+        <div class="ruler-bar" style="width: 20px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-6</div>
+        <div class="ruler-px">24 px</div>
+        <div class="ruler-bar" style="width: 24px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-8</div>
+        <div class="ruler-px">32 px</div>
+        <div class="ruler-bar" style="width: 32px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-10</div>
+        <div class="ruler-px">40 px</div>
+        <div class="ruler-bar" style="width: 40px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-12</div>
+        <div class="ruler-px">48 px</div>
+        <div class="ruler-bar" style="width: 48px;"></div>
+      </div>
+      <div class="ruler-row">
+        <div class="ruler-token">--space-16</div>
+        <div class="ruler-px">64 px</div>
+        <div class="ruler-bar" style="width: 64px;"></div>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-block-start: var(--space-8);">
+      <strong>RTL discipline · انضباط الاتجاه</strong>
+      All spacing properties must use logical equivalents:
+      <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">margin-inline-start</code>,
+      <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">padding-inline-end</code>,
+      <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">inset-inline-start</code>.
+      Never <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">margin-left</code> or
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">padding-right</code> in app code.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 08 — SHAPE
+       ============================================================ -->
+  <section class="section" id="shape">
+    <header class="section-head">
+      <div class="section-num">§ 08</div>
+      <div>
+        <h2 class="section-title-ar">الزوايا والظلال</h2>
+        <div class="section-title-en">Shape & Elevation</div>
+        <p class="section-lede">
+          Border radius is moderate — 6 to 12 px. Shadows are minimal; depth comes from background tone,
+          not from heavy drops.
+        </p>
+      </div>
+    </header>
+
+    <h3 class="sub-h">الزوايا <span class="en">Border Radius</span></h3>
+    <div class="specimen-grid">
+      <div class="radius-card">
+        <div class="radius-block" style="border-radius: 6px;"></div>
+        <div class="specimen-name">SM · صغيرة</div>
+        <div class="specimen-code">--radius-sm · 6px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-block" style="border-radius: 8px;"></div>
+        <div class="specimen-name">MD · متوسطة</div>
+        <div class="specimen-code">--radius-md · 8px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-block" style="border-radius: 12px;"></div>
+        <div class="specimen-name">LG · كبيرة</div>
+        <div class="specimen-code">--radius-lg · 12px</div>
+      </div>
+      <div class="radius-card">
+        <div class="radius-block" style="border-radius: 9999px;"></div>
+        <div class="specimen-name">FULL · كاملة</div>
+        <div class="specimen-code">--radius-full · pills/avatars</div>
+      </div>
+    </div>
+
+    <h3 class="sub-h">الظلال <span class="en">Shadows</span></h3>
+    <div class="specimen-grid">
+      <div class="shadow-card">
+        <div class="shadow-block" style="box-shadow: 0 1px 2px rgba(0,0,0,0.06);"></div>
+        <div class="specimen-name">SM · خفيف</div>
+        <div class="specimen-code">--shadow-sm · cards</div>
+      </div>
+      <div class="shadow-card">
+        <div class="shadow-block" style="box-shadow: 0 4px 12px rgba(0,0,0,0.08);"></div>
+        <div class="specimen-name">MD · متوسط</div>
+        <div class="specimen-code">--shadow-md · hover</div>
+      </div>
+      <div class="shadow-card">
+        <div class="shadow-block" style="box-shadow: 0 10px 38px rgba(0,0,0,0.18);"></div>
+        <div class="specimen-name">LG · قوي</div>
+        <div class="specimen-code">--shadow-lg · modals</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 09 — COMPONENTS
+       ============================================================ -->
+  <section class="section" id="components">
+    <header class="section-head">
+      <div class="section-num">§ 09</div>
+      <div>
+        <h2 class="section-title-ar">المكونات الأساسية</h2>
+        <div class="section-title-en">Components</div>
+        <p class="section-lede">
+          The MVP whitelist. Every component below maps directly to a PrimeNG v21 primitive (see § 15).
+          Visual variants are controlled exclusively through theme tokens — never <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">::ng-deep</code>.
+        </p>
+      </div>
+    </header>
+
+    <!-- Buttons -->
+    <div class="gallery-row">
+      <h3 class="sub-h">الأزرار <span class="en">Buttons · btn / btn-primary / btn-ghost</span></h3>
+      <div class="gallery-grid">
+        <button class="btn btn-primary">حفظ القيد</button>
+        <button class="btn btn-primary">+ تسجيل دَين</button>
+        <button class="btn btn-ghost">إلغاء</button>
+        <button class="btn btn-ghost">تعديل</button>
+        <button class="btn" style="background: var(--danger); color: var(--text-inverse);">حذف نهائي</button>
+      </div>
+      <p class="gallery-meta">
+        Primary actions use <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--primary</code>.
+        Ghost is the default for secondary. Destructive uses <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">--danger</code> and
+        always carries a ConfirmDialog. No celebratory micro-animations on click — the press transition is 120ms ease.
+      </p>
+    </div>
+
+    <!-- Badges -->
+    <div class="gallery-row">
+      <h3 class="sub-h">الشارات <span class="en">Badges · semantic state</span></h3>
+      <div class="gallery-grid">
+        <span class="badge badge-success">مُسدَّد</span>
+        <span class="badge badge-warning">يستحق قريباً</span>
+        <span class="badge badge-danger">متأخّر</span>
+        <span class="badge badge-gold">ذهب</span>
+        <span class="badge badge-neutral">مسوَّدة</span>
+      </div>
+      <p class="gallery-meta">
+        Badges always pair color with text — never color alone. Gold badge is reserved for gold-denominated rows.
+      </p>
+    </div>
+
+    <!-- Form fields -->
+    <div class="gallery-row">
+      <h3 class="sub-h">الحقول <span class="en">Form Fields · 44px min, focus ring 3px primary-soft</span></h3>
+      <div class="gallery-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); max-width: 760px;">
+        <div class="field">
+          <label for="amt">المبلغ · Amount</label>
+          <input id="amt" class="amount" inputmode="decimal" placeholder="0.00" value="1,250.00">
+          <div class="help">Tabular numerals applied automatically.</div>
+        </div>
+        <div class="field">
+          <label for="who">الجهة · Contact</label>
+          <input id="who" placeholder="ابدأ كتابة الاسم…" value="أحمد محمود">
+          <div class="help">AutoComplete · freeform + suggestions.</div>
+        </div>
+      </div>
+      <p class="gallery-meta">
+        Focus ring is always visible — 2px solid <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--primary</code> + 3px
+        <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--primary-soft</code> wash. Never removed under any circumstance.
+      </p>
+    </div>
+
+    <!-- Avatars -->
+    <div class="gallery-row">
+      <h3 class="sub-h">الصور الرمزية <span class="en">Contact Avatars · 10 backgrounds, color is identity not status</span></h3>
+      <div class="gallery-grid">
+        <div class="contact-avatar bg-1">أ</div>
+        <div class="contact-avatar bg-2">ف</div>
+        <div class="contact-avatar bg-3">س</div>
+        <div class="contact-avatar bg-4">ك</div>
+        <div class="contact-avatar bg-5">م</div>
+        <div class="contact-avatar bg-6">ع</div>
+        <div class="contact-avatar bg-7">ي</div>
+        <div class="contact-avatar bg-8">ن</div>
+        <div class="contact-avatar bg-9">ه</div>
+        <div class="contact-avatar bg-10">د</div>
+      </div>
+      <p class="gallery-meta">
+        Avatar background is stable per-contact (deterministic hash). Colors here are
+        <em>identity-only</em> — they never overlap with semantic success/danger usage in surrounding UI.
+      </p>
+    </div>
+
+    <!-- Debt row -->
+    <div class="gallery-row">
+      <h3 class="sub-h">صف الدَّين <span class="en">Debt Row · the atomic unit</span></h3>
+      <div style="background: var(--surface); border: 1px solid var(--divider); border-radius: var(--radius-md); overflow: hidden; max-width: 480px;">
+        <div class="debt-row">
+          <div class="ca" style="background: #0F766E;">أ</div>
+          <div class="info">
+            <div class="name">أحمد محمود</div>
+            <div class="meta">آخر معاملة · منذ 3 أيام</div>
+          </div>
+          <div class="amt amount" style="color: var(--success);">1,250.00 <span class="currency">USD</span></div>
+        </div>
+        <div class="debt-row">
+          <div class="ca" style="background: #B45309;">ف</div>
+          <div class="info">
+            <div class="name">فاطمة عبد الله</div>
+            <div class="meta">عرس الأخت · 14 ديسمبر</div>
+          </div>
+          <div class="amt amount" style="color: var(--accent-gold);">12.500 <span class="currency">g</span></div>
+        </div>
+        <div class="debt-row">
+          <div class="ca" style="background: #6366F1;">ك</div>
+          <div class="info">
+            <div class="name">كريم البقّال</div>
+            <div class="meta">دفعة جزئية · أمس</div>
+          </div>
+          <div class="amt amount" style="color: var(--danger);">52,840.31 <span class="currency">SAR</span></div>
+        </div>
+      </div>
+      <p class="gallery-meta">
+        The atomic unit of every list view. Same component, two parents (receivable / payable column);
+        amount color inherits from parent's semantic context.
+      </p>
+    </div>
+
+    <!-- Annotation -->
+    <div class="gallery-row">
+      <h3 class="sub-h">التنبيه الهادئ <span class="en">Calm Annotation · gold-soft strip</span></h3>
+      <div class="annotation" style="max-width: 600px;">
+        <div class="annotation-title">آخر مزامنة · Last sync</div>
+        قبل ساعتين. اتصالك بالشبكة ضعيف الآن — ستُحفظ تعديلاتك تلقائياً عند العودة.
+      </div>
+      <p class="gallery-meta">
+        Use for ambient state (sync freshness, gentle nudges). Never for errors — those use
+        muted amber, not alarm red.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 10 — PATTERNS · The Glance
+       ============================================================ -->
+  <section class="section" id="patterns">
+    <header class="section-head">
+      <div class="section-num">§ 10</div>
+      <div>
+        <h2 class="section-title-ar">النمط الرئيسي · النظرة</h2>
+        <div class="section-title-en">Defining Pattern · The Glance</div>
+        <p class="section-lede">
+          Direction 6 — Segmented Summary. Two horizontal hero tiles answer the only question that matters:
+          <em>"Where do I stand?"</em>. The layout itself is the answer; no scanning required.
+        </p>
+      </div>
+    </header>
+
+    <div class="glance-preview">
+      <div class="glance-heroes">
+        <div class="glance-hero receivable">
+          <div class="glance-label">لي · Receivable</div>
+          <div class="glance-amount amount">2,547.30 <span class="currency">USD</span></div>
+        </div>
+        <div class="glance-hero payable">
+          <div class="glance-label">عليّ · Payable</div>
+          <div class="glance-amount amount">890.75 <span class="currency">USD</span></div>
+        </div>
+      </div>
+
+      <div class="glance-cols">
+        <div class="glance-col receivable">
+          <div class="glance-col-h">لي · 3 جهات</div>
+          <div class="debt-row">
+            <div class="ca" style="background: #0F766E;">أ</div>
+            <div class="info">
+              <div class="name">أحمد محمود</div>
+              <div class="meta">منذ 3 أيام</div>
+            </div>
+            <div class="amt amount">1,250.00</div>
+          </div>
+          <div class="debt-row">
+            <div class="ca" style="background: #6366F1;">س</div>
+            <div class="info">
+              <div class="name">سارة الدمشقي</div>
+              <div class="meta">قرض الجامعة</div>
+            </div>
+            <div class="amt amount">897.30</div>
+          </div>
+          <div class="debt-row">
+            <div class="ca" style="background: #DB2777;">م</div>
+            <div class="info">
+              <div class="name">محمد رفعت</div>
+              <div class="meta">أمس</div>
+            </div>
+            <div class="amt amount">400.00</div>
+          </div>
+        </div>
+
+        <div class="glance-col payable">
+          <div class="glance-col-h">عليّ · جهتان</div>
+          <div class="debt-row">
+            <div class="ca" style="background: #B45309;">ف</div>
+            <div class="info">
+              <div class="name">فاطمة عبد الله</div>
+              <div class="meta">عرس الأخت</div>
+            </div>
+            <div class="amt amount">490.75</div>
+          </div>
+          <div class="debt-row">
+            <div class="ca" style="background: #059669;">ع</div>
+            <div class="info">
+              <div class="name">عمر التجاري</div>
+              <div class="meta">منذ أسبوع</div>
+            </div>
+            <div class="amt amount">400.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>What this pattern refuses to do · ما لا تفعله</strong>
+      No aggregate net-worth headline (would violate denomination integrity). No animated count-ups.
+      No badge counters. No "financial health" score. No filters or sort UI in Stage 1 — the layout is pre-sorted by the system.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 11 — VOICE & MICROCOPY
+       ============================================================ -->
+  <section class="section" id="voice">
+    <header class="section-head">
+      <div class="section-num">§ 11</div>
+      <div>
+        <h2 class="section-title-ar">الصوت والمفردات</h2>
+        <div class="section-title-en">Voice & Microcopy</div>
+        <p class="section-lede">
+          Vocabulary leans on <em>record</em>, <em>write</em>, <em>witness</em>, <em>remember</em>, <em>settle</em>.
+          We don't celebrate routine actions; we don't accuse counterparties.
+        </p>
+      </div>
+    </header>
+
+    <table class="voice-table">
+      <thead>
+        <tr>
+          <th>Context · سياق</th>
+          <th>✓ Use · استخدم</th>
+          <th>✗ Avoid · تجنّب</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Saving a transaction</td>
+          <td><span class="voice-good">حُفِظ. · Recorded.</span></td>
+          <td><span class="voice-bad">ممتاز! تمّ بنجاح! 🎉</span></td>
+        </tr>
+        <tr>
+          <td>Adding a debt</td>
+          <td><span class="voice-good">من اقترض منك؟ · Who borrowed from you?</span></td>
+          <td><span class="voice-bad">إضافة قيد محاسبي جديد</span></td>
+        </tr>
+        <tr>
+          <td>Settling a debt</td>
+          <td><span class="voice-good">مُسدَّد. · Settled.</span></td>
+          <td><span class="voice-bad">رائع! لقد تخلّصت من دَين آخر!</span></td>
+        </tr>
+        <tr>
+          <td>Sharing a statement</td>
+          <td><span class="voice-good">شوف كشف حسابنا مع بعض، تأكد معي من الأرقام.</span></td>
+          <td><span class="voice-bad">لديك دَين مستحق. ادفع الآن.</span></td>
+        </tr>
+        <tr>
+          <td>Recipient page header</td>
+          <td><span class="voice-good">سجَّلَ [الاسم] هذه المعاملات معك.</span></td>
+          <td><span class="voice-bad">يقول [الاسم] إنّك تدين له.</span></td>
+        </tr>
+        <tr>
+          <td>Sync error</td>
+          <td><span class="voice-good">تأخّر الحفظ. سنحاول مرة أخرى تلقائياً.</span></td>
+          <td><span class="voice-bad">⚠️ خطأ! فشل في الحفظ! بياناتك في خطر!</span></td>
+        </tr>
+        <tr>
+          <td>Empty dashboard</td>
+          <td><span class="voice-good">ابدأ بتسجيل أول معاملة.</span></td>
+          <td><span class="voice-bad">مرحباً 👋 لنبدأ رحلتك المالية المثيرة!</span></td>
+        </tr>
+        <tr>
+          <td>Stale data warning</td>
+          <td><span class="voice-good">آخر تحديث قبل ساعتين.</span></td>
+          <td><span class="voice-bad">البيانات قديمة!</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="sub-h" style="margin-block-start: var(--space-8);">التوازي بين اللغتين <span class="en">RTL/LTR Parity Check</span></h3>
+    <p class="gallery-meta" style="margin-block-end: var(--space-3);">
+      The same row component, rendered in both directions. Logical properties keep the layout symmetric;
+      digits stay Latin in both contexts.
+    </p>
+    <div class="parity">
+      <div class="parity-side rtl">
+        <div class="label">AR · RTL</div>
+        <div style="background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--divider); overflow: hidden;">
+          <div class="debt-row">
+            <div class="ca" style="background: #0F766E;">أ</div>
+            <div class="info">
+              <div class="name">أحمد محمود</div>
+              <div class="meta">آخر معاملة · منذ 3 أيام</div>
+            </div>
+            <div class="amt amount" style="color: var(--success);">1,250.00 <span class="currency">USD</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="parity-side ltr">
+        <div class="label">EN · LTR</div>
+        <div style="background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--divider); overflow: hidden;">
+          <div class="debt-row">
+            <div class="ca" style="background: #0F766E;">A</div>
+            <div class="info">
+              <div class="name">Ahmed Mahmoud</div>
+              <div class="meta">Last transaction · 3 days ago</div>
+            </div>
+            <div class="amt amount" style="color: var(--success);">1,250.00 <span class="currency">USD</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 12 — MOTION
+       ============================================================ -->
+  <section class="section" id="motion">
+    <header class="section-head">
+      <div class="section-num">§ 12</div>
+      <div>
+        <h2 class="section-title-ar">الحركة</h2>
+        <div class="section-title-en">Motion · navigation only</div>
+        <p class="section-lede">
+          Motion serves wayfinding, never decoration. Numbers do not animate. Saves do not flourish.
+          Charts render in their final state with zero entry tween.
+        </p>
+      </div>
+    </header>
+
+    <table class="motion-table">
+      <thead>
+        <tr>
+          <th>Surface · سطح</th>
+          <th>Duration</th>
+          <th>Easing</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Button hover · زر</td>
+          <td class="ms">120ms</td>
+          <td>ease</td>
+          <td>color/background only</td>
+        </tr>
+        <tr>
+          <td>Focus ring appearance</td>
+          <td class="ms">100ms</td>
+          <td>ease-out</td>
+          <td>opacity + box-shadow</td>
+        </tr>
+        <tr>
+          <td>Theme switch</td>
+          <td class="ms">200ms</td>
+          <td>ease</td>
+          <td>background-color · color</td>
+        </tr>
+        <tr>
+          <td>Modal open · حوار</td>
+          <td class="ms">180ms</td>
+          <td>ease-out</td>
+          <td>opacity + scale 0.96 → 1</td>
+        </tr>
+        <tr>
+          <td>Toast appear</td>
+          <td class="ms">150ms</td>
+          <td>ease-out</td>
+          <td>1s visible · 150ms fade</td>
+        </tr>
+        <tr>
+          <td>Route transition</td>
+          <td class="ms">200ms</td>
+          <td>ease</td>
+          <td>cross-fade only</td>
+        </tr>
+        <tr>
+          <td>Skeleton shimmer</td>
+          <td class="ms">1400ms</td>
+          <td>linear</td>
+          <td>infinite, very subtle gradient</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Forbidden motion · حركة ممنوعة</strong>
+      Number count-ups · row reorder animations · celebratory micro-interactions on save · ripple effects ·
+      bouncy springs · auto-scroll on data update · chart entry tweens. <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">prefers-reduced-motion</code>
+      collapses every duration above 100ms to instant.
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 13 — ACCESSIBILITY
+       ============================================================ -->
+  <section class="section" id="a11y">
+    <header class="section-head">
+      <div class="section-num">§ 13</div>
+      <div>
+        <h2 class="section-title-ar">إمكانية الوصول</h2>
+        <div class="section-title-en">Accessibility · WCAG 2.1 AA minimum</div>
+        <p class="section-lede">
+          Every text/background pair meets AA, with AAA for body text and financial digits where achievable.
+          Touch targets ≥ 48×48 px. Focus rings always visible. RTL parity tested on every screen.
+        </p>
+      </div>
+    </header>
+
+    <h3 class="sub-h">نسب التباين <span class="en">Contrast Pairs</span></h3>
+
+    <div class="contrast-row">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #18181B; background: #FFFFFF; padding: 2px 8px; border-radius: 4px;">Body text on white</span>
+      </div>
+      <span class="ratio aaa">16.1 : 1 · AAA</span>
+    </div>
+    <div class="contrast-row">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #0F766E; background: #FFFFFF; padding: 2px 8px; border-radius: 4px;">Primary teal on white</span>
+      </div>
+      <span class="ratio aa">4.98 : 1 · AA</span>
+    </div>
+    <div class="contrast-row">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #B45309; background: #FFFFFF; padding: 2px 8px; border-radius: 4px;">Accent gold on white</span>
+      </div>
+      <span class="ratio aa">5.12 : 1 · AA</span>
+    </div>
+    <div class="contrast-row">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #15803D; background: #DCFCE7; padding: 2px 8px; border-radius: 4px;">Success on success-soft</span>
+      </div>
+      <span class="ratio aa">5.45 : 1 · AA</span>
+    </div>
+    <div class="contrast-row">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #B91C1C; background: #FEE2E2; padding: 2px 8px; border-radius: 4px;">Danger on danger-soft</span>
+      </div>
+      <span class="ratio aa">5.92 : 1 · AA</span>
+    </div>
+    <div class="contrast-row" style="background: #0F0F11;">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #2DD4BF; background: #0F0F11; padding: 2px 8px; border-radius: 4px;">Dark · primary on canvas</span>
+      </div>
+      <span class="ratio aaa">11.2 : 1 · AAA</span>
+    </div>
+    <div class="contrast-row" style="background: #FFF8EC;">
+      <div style="font-size: var(--text-base);">
+        <span style="color: #ff8100; background: #FFFFFF; padding: 2px 8px; border-radius: 4px;">Logo orange on white</span>
+      </div>
+      <span class="ratio fail">2.6 : 1 · FAIL</span>
+    </div>
+    <p class="gallery-meta" style="margin-block-start: var(--space-3);">
+      The last row demonstrates exactly why <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">#ff8100</code>
+      is locked to brand-only space — it would fail WCAG for any UI text use.
+    </p>
+
+    <h3 class="sub-h">الحد الأدنى لمساحة اللمس <span class="en">Touch Targets</span></h3>
+    <p style="font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; max-width: 60ch;">
+      All interactive elements maintain a minimum 48×48 px hit area, even when the visual control is smaller.
+      Spacing between adjacent targets is ≥ 8 px to prevent accidental taps.
+    </p>
+
+    <h3 class="sub-h">حلقة التركيز <span class="en">Focus Ring · always visible</span></h3>
+    <div class="row">
+      <button class="btn btn-primary" style="outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: 0 0 0 5px var(--primary-soft);">قيد التركيز</button>
+      <input style="font-family: inherit; padding: var(--space-3) var(--space-4); border: 1px solid var(--primary); border-radius: var(--radius-md); box-shadow: 0 0 0 3px var(--primary-soft); min-height: 44px;" value="حقل قيد التركيز">
+    </div>
+    <p class="gallery-meta">2px solid <code style="font-family:'Inter',monospace;background:var(--primary-soft);color:var(--primary);padding:1px 6px;border-radius:4px;">--primary</code> outline + 2px offset + 3px primary-soft halo. Never <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">outline: none</code>.</p>
+  </section>
+
+  <!-- ============================================================
+       § 14 — ANTI-PATTERNS
+       ============================================================ -->
+  <section class="section" id="anti">
+    <header class="section-head">
+      <div class="section-num">§ 14</div>
+      <div>
+        <h2 class="section-title-ar">ما نتجنّبه عمداً</h2>
+        <div class="section-title-en">Anti-patterns · what Faktuboh refuses</div>
+        <p class="section-lede">
+          Each rejection traces back to a specific pillar. None of these is a taste preference;
+          each one would actively undermine an emotional design principle.
+        </p>
+      </div>
+    </header>
+
+    <div class="anti-grid">
+      <div class="anti-card">
+        <h5>Streaks & badges</h5>
+        <p>Recording a debt is a utility action, not a milestone. Streaks create anxiety ("I must log today"); the opposite of mental offload.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Animated number count-ups</h5>
+        <p>Numbers that animate suggest the system is "calculating." Faktuboh's promise is faithful display of what was recorded — calculation must feel instantaneous and certain.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Aggregate net-worth headline</h5>
+        <p>Summing across currencies and gold violates denomination integrity — the product's first principle. Each denomination is its own pocket.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Confetti or success sounds</h5>
+        <p>Celebration on save reframes a calm, factual act as an event. Quranic provenance describes writing debt as ordinary, not ceremonial.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Mascot-led tutorials</h5>
+        <p>Breaks the serious, trustworthy tone of a financial tool. Onboarding is the empty Glance with one quiet CTA — nothing more.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Urgency notifications</h5>
+        <p>"You haven't logged today!" violates background peace-of-mind. Faktuboh notifies only when something genuinely awaits action (a counterparty confirmed).</p>
+      </div>
+      <div class="anti-card">
+        <h5>Confrontational language</h5>
+        <p>"You owe" framing turns the recipient into a defendant. Always neutral: "Transactions recorded by [name]."</p>
+      </div>
+      <div class="anti-card">
+        <h5>Gradient backgrounds & decorative animation</h5>
+        <p>Visual instability undermines numeric authority. Decoration is not the brand — calm clarity is.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Mandatory categorization</h5>
+        <p>Faktuboh tracks <em>relationships</em>, not categories. Forcing a "category" picker is friction with no value.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Mirrored RTL icons that shouldn't mirror</h5>
+        <p>Clock faces, play buttons, charts — these have absolute orientations. Mirroring them screams "AI translation," not "designed for Arabic."</p>
+      </div>
+      <div class="anti-card">
+        <h5>Inconsistent numerals</h5>
+        <p>Arabic-Indic ٠–٩ in one screen, Latin 0–9 in another. Pick one (Latin) and hold it; users paste numbers into bank apps.</p>
+      </div>
+      <div class="anti-card">
+        <h5>Saturated category fills</h5>
+        <p>Flooding a card with 100% saturated red or green creates emotional weight that doesn't match the product's calm. Always the soft variant + 1px strong border.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       § 15 — PRIMENG MAPPING
+       ============================================================ -->
+  <section class="section" id="mapping">
+    <header class="section-head">
+      <div class="section-num">§ 15</div>
+      <div>
+        <h2 class="section-title-ar">خريطة المكونات إلى PrimeNG</h2>
+        <div class="section-title-en">Component Mapping · PrimeNG v21 Whitelist</div>
+        <p class="section-lede">
+          The MVP-approved component set. Anything outside this list requires explicit justification in PR review.
+          Theme tokens override Aura defaults via the custom <em>"Faktuboh Quiet"</em> preset.
+        </p>
+      </div>
+    </header>
+
+    <table class="map-table">
+      <thead>
+        <tr>
+          <th>Use case · حالة الاستخدام</th>
+          <th>PrimeNG component</th>
+          <th>Token override notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Sidebar / topbar</td>
+          <td><code>Menubar</code> · <code>Sidebar</code></td>
+          <td>No expand animations. Active item uses <code>--primary-soft</code>.</td>
+        </tr>
+        <tr>
+          <td>Party list (home)</td>
+          <td>Custom <code>Card</code> + Tailwind flex</td>
+          <td>Cards feel warmer than PrimeNG list components.</td>
+        </tr>
+        <tr>
+          <td>Glance hero tiles</td>
+          <td><code>Card</code> with custom header slot</td>
+          <td>Bg = <code>--success-soft</code> / <code>--danger-soft</code>; 1px border; never saturated fill.</td>
+        </tr>
+        <tr>
+          <td>Two-column lists</td>
+          <td><code>DataView</code> in <code>list</code> layout</td>
+          <td>Sort/filter hidden until count ≥ 5 (Glance Maturity Model trigger).</td>
+        </tr>
+        <tr>
+          <td>Transaction history</td>
+          <td><code>DataTable</code> (basic mode)</td>
+          <td>Tabular numerals; alt-row tint via <code>--surface-raised</code>; no striping animation.</td>
+        </tr>
+        <tr>
+          <td>Settled drawer</td>
+          <td><code>Accordion</code></td>
+          <td>Collapsed by default; lazy-loads expansion content.</td>
+        </tr>
+        <tr>
+          <td>New transaction dialog</td>
+          <td><code>Dialog</code> + form controls</td>
+          <td>InputNumber, AutoComplete, Calendar, Dropdown.</td>
+        </tr>
+        <tr>
+          <td>Party picker</td>
+          <td><code>AutoComplete</code></td>
+          <td>Freeform + suggestion. RTL tested.</td>
+        </tr>
+        <tr>
+          <td>Date entry</td>
+          <td><code>Calendar</code></td>
+          <td>Localized; Hijri later, Gregorian MVP.</td>
+        </tr>
+        <tr>
+          <td>Amount entry</td>
+          <td><code>InputNumber</code></td>
+          <td>Currency-aware; grouping separator per locale.</td>
+        </tr>
+        <tr>
+          <td>Currency selector</td>
+          <td><code>Dropdown</code> · <code>Select</code></td>
+          <td>Flat list — no grouping UI.</td>
+        </tr>
+        <tr>
+          <td>Save confirmation</td>
+          <td><code>Toast</code> (single-line, 1s)</td>
+          <td>No icon animation; no sound.</td>
+        </tr>
+        <tr>
+          <td>Destructive confirm</td>
+          <td><code>ConfirmDialog</code></td>
+          <td>Rarely used; only on delete.</td>
+        </tr>
+        <tr>
+          <td>Language switcher</td>
+          <td><code>SelectButton</code> (two options)</td>
+          <td>Persistent in header; instant switch.</td>
+        </tr>
+        <tr>
+          <td>Loading states</td>
+          <td><code>Skeleton</code></td>
+          <td>No spinners — ever. Skeletons communicate structure.</td>
+        </tr>
+        <tr>
+          <td>Distribution charts (FR32/33)</td>
+          <td><code>Chart</code></td>
+          <td>Quiet envelope: animation off, semantic tokens only, lazy-imported.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Forbidden components · مكونات ممنوعة</strong>
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Galleria</code>,
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Carousel</code>,
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Timeline</code> (motion-rich),
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Rating</code>,
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Knob</code> (gamification-adjacent),
+      <code style="font-family:'Inter',monospace;background:var(--danger-soft);color:var(--danger);padding:1px 6px;border-radius:4px;">Steps</code> wizard (long-onboarding anti-pattern).
+    </div>
+  </section>
+
+  <!-- Colophon -->
+  <footer class="colophon">
+    <div class="colophon-rule"></div>
+    <div>فاكتبوه · Design System v1.0 · 2026-04</div>
+    <div>Aligned with UX Specification Step 14 · Direction 6 (Segmented Summary)</div>
+    <div>Tokens & shared styles: <a href="../ux-design-directions/styles.css">styles.css</a> · Direction prototypes: <a href="../ux-design-directions/index.html">ux-design-directions/</a></div>
+  </footer>
+
+</main>
+
+<!-- ============================================================
+     LIVE CONTROLS · theme + direction toggle
+     ============================================================ -->
+<div class="controls" role="group" aria-label="Theme and direction controls">
+  <button class="control-btn" data-action="theme" data-value="light">Light</button>
+  <button class="control-btn" data-action="theme" data-value="dark">Dark</button>
+  <span style="width: 1px; background: var(--divider);"></span>
+  <button class="control-btn" data-action="dir" data-value="rtl">RTL</button>
+  <button class="control-btn" data-action="dir" data-value="ltr">LTR</button>
+</div>
+
+<script>
+  (function () {
+    const html = document.documentElement;
+
+    function setActive(action, value) {
+      document.querySelectorAll('.control-btn[data-action="' + action + '"]')
+        .forEach(b => b.classList.toggle('active', b.dataset.value === value));
+    }
+
+    function applyTheme(t) {
+      html.setAttribute('data-theme', t);
+      setActive('theme', t);
+    }
+
+    function applyDir(d) {
+      html.setAttribute('dir', d);
+      html.setAttribute('lang', d === 'rtl' ? 'ar' : 'en');
+      setActive('dir', d);
+    }
+
+    document.querySelectorAll('.control-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.action === 'theme') applyTheme(btn.dataset.value);
+        if (btn.dataset.action === 'dir')   applyDir(btn.dataset.value);
+      });
+    });
+
+    // initial state
+    applyTheme(html.getAttribute('data-theme') || 'light');
+    applyDir(html.getAttribute('dir') || 'rtl');
+  })();
+</script>
+
+</body>
+</html>

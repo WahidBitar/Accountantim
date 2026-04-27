@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Faktuboh.Application\Faktuboh.Application.csproj" />
+    <ProjectReference Include="..\Faktuboh.Infrastructure\Faktuboh.Infrastructure.csproj" />
+    <ProjectReference Include="..\Faktuboh.Contracts\Faktuboh.Contracts.csproj" />
+    <ProjectReference Include="..\..\aspire\Faktuboh.ServiceDefaults\Faktuboh.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>
