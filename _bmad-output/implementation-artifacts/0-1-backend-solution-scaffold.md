@@ -1,6 +1,6 @@
 # Story 0.1: Backend solution scaffold
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -266,6 +266,62 @@ _Skipped — need design judgment / follow-up decision (4):_
 - `aspire.config.json` mirrors `.csproj` filename → Aspire 13 template artifact, not authored.
 - AC7 ESLint TODO recorded in NSwag README rather than `frontend/eslint.config.js` → spec AC7 itself parenthetically deferred this to Story 0.2 (frontend project does not yet exist).
 
+### Review Findings (Round 2 — 2026-04-27)
+
+_Second-pass adversarial review (Blind Hunter + Edge Case Hunter + Acceptance Auditor) on the post-handoff tree (commit `d88a271`). 50+ raw findings normalized → 8 patches + 6 deferrals + ~30 dismissed. Acceptance Auditor: ALL 9 ACs PASS, all 7 critical guardrails PASS, all 22 prior-round patches verified present in code, all 4 prior-round deferrals (P2, P11, P12, P17) re-affirmed sound. Two reviewers' shared "Critical Money OverflowException paramName/message bug" was verified as false positive against .NET source: the `(string, Exception)` overload of `ArgumentOutOfRangeException` passes the first arg to `Exception.Message` via `: base(message, innerException)`. Findings below are quality-improvement gaps surfaced by the second pass._
+
+**Patch (8)** — unambiguous, in-scope for Story 0.1:
+
+- [x] [Review][Patch] (R2-P1) Money: collapse `IsSupported(currency)` + `MinorUnits(currency)` to a single `TryGetMinorUnits(currency, out var minor)` — eliminates the redundant FrozenDictionary lookup in the constructor hot path; closes the check-then-act pattern surfaced by Blind Hunter. [`backend/src/Faktuboh.Domain/Primitives/Money.cs:31-34`, `backend/src/Faktuboh.Domain/Primitives/CurrencyRegistry.cs`]
+- [x] [Review][Patch] (R2-P2) Money: change `OverflowException` rethrow to `new ArgumentOutOfRangeException(nameof(amount), amount, $"Amount {amount} cannot be rounded to {minorUnits} minor units without overflow.")` — sets `ParamName` and `ActualValue` for cleaner diagnostics. (Loses inner-exception chain; acceptable since `OverflowException` carries no diagnostic value beyond what the message conveys.) Both reviewers misread the existing code as a bug; the actual issue is diagnostic-quality, not correctness. [`backend/src/Faktuboh.Domain/Primitives/Money.cs:43-46`]
+- [x] [Review][Patch] (R2-P3) Money: add upper-bound check `if (amount > MaxAmount) throw new ArgumentOutOfRangeException(...)` where `MaxAmount = 1_000_000_000_000_000m` — matches the Postgres `numeric(19, 4)` precision (architecture.md §5.2.5) and the FsCheck range applied in `MoneyTests` (P18). Without this, `new Money(decimal.MaxValue, "EUR")` constructs successfully because `decimal.Round(MaxValue, 2)` does not overflow, then arithmetic in aggregates overflows far from the construction site. [`backend/src/Faktuboh.Domain/Primitives/Money.cs:26-30`]
+- [x] [Review][Patch] (R2-P4) Money: normalize `-0m` → `+0m` after rounding — `decimal -0m` exists as a bit pattern (`new decimal(0, 0, 0, true, 0)`); `amount < 0m` returns `false` for it, then `decimal.Round` preserves the sign, and the value persists into ledger arithmetic. Add `if (rounded == 0m) rounded = 0m;` (or `decimal.Abs(rounded)` when zero) before assigning `Amount`. [`backend/src/Faktuboh.Domain/Primitives/Money.cs:53`]
+- [x] [Review][Patch] (R2-P5) DomainException: add `protected DomainException(string code, string message, Exception? innerException) : base(message, innerException)` overload — preserves causal chain when wrapping lower-layer exceptions (e.g., DB constraint violation re-raised as a domain error). Current single ctor forces callers to drop the inner exception. [`backend/src/Faktuboh.Domain/Errors/DomainException.cs`]
+- [x] [Review][Patch] (R2-P6) Aspire SDK / package version alignment: `Aspire.AppHost.Sdk` is pinned to `13.2.0` while `Aspire.Hosting.PostgreSQL` is `13.2.4`. Bump the SDK to `13.2.4` (or pin both via Directory.Packages.props once added in a later story) to prevent silent drift under `TreatWarningsAsErrors=true`. [`backend/aspire/Faktuboh.AppHost/Faktuboh.AppHost.csproj:1,16`]
+- [x] [Review][Patch] (R2-P7) NetArchTest: replace namespace-prefix matching with assembly-name or full-name matching in `SharedKernelPurityTests` — `HaveDependencyOnAny("Faktuboh.Api", ...)` would falsely flag a future `Faktuboh.ApiContracts` namespace and silently miss a renamed `Faktuboh.ApiV2`. Use `HaveDependencyOnAssembly`/`Have` predicates against the actual assembly names of sibling projects. [`backend/tests/Faktuboh.ArchitectureTests/SharedKernelPurityTests.cs:18-27`]
+- [x] [Review][Patch] (R2-P8) `OpenApiEndpointTests`: replace substring match `body.Should().Contain("\"/health\"")` with structural assertion that parses the OpenAPI JSON and verifies `paths` contains the `/health` key — current test would pass on a description string mentioning `/health` and gives a misleading green when the actual path is missing. [`backend/tests/Faktuboh.Api.Tests/OpenApiEndpointTests.cs:33-35`]
+
+**Deferred (6)** — real concerns, but downstream-story work or load-bearing on types not in 0.1:
+
+- [x] [Review][Defer] (R2-D1) Money JSON wire-format gap (`amount` should serialize as JSON string per architecture.md §5.2.5, not number) — defer to Story 0.4 (RFC 9457 + wire format). The `MoneyJsonConverter` + factory go with the JSON wire-format wiring and the `Faktuboh.Contracts/` DTOs that consume them; neither exists in 0.1. (defer-target: 0.4)
+- [x] [Review][Defer] (R2-D2) ADR-024 central exception-handler registration (`AddExceptionHandler<DomainExceptionHandler>()` + `AddExceptionHandler<ValidationExceptionHandler>()` + `app.UseExceptionHandler()`) is missing from `Program.cs` — defer to Story 0.4 where the handler types are authored. Without `UseExceptionHandler()`, the registered `AddProblemDetails()` factory is never invoked for unhandled exceptions; this is intentional in 0.1 (no slices yet exist to throw). (defer-target: 0.4)
+- [x] [Review][Defer] (R2-D3) `IDomainException` extraction interface for ProblemDetails middleware — `DomainException.Code` is reachable only via `as DomainException` cast in middleware. An `IDomainException { string Code { get; } }` interface decouples the middleware from the abstract base. Defer to Story 0.4. (defer-target: 0.4)
+- [x] [Review][Defer] (R2-D4) `WebApplicationFactory<Program>` DB-config override harness — current integration tests pass because `Program.cs` reads no `ConnectionStrings:faktuboh`, but Story 0.6 (EF Core + bitemporal interceptor) will introduce one and break every integration test that boots the full Program. Establish a custom factory subclass that strips DB registrations or points to an in-memory provider before 0.6 begins. (defer-target: 0.6)
+- [x] [Review][Defer] (R2-D5) NSwag tooling references non-existent paths/switches — `nswag.json` points at `../../artifacts/openapi.json` (not produced) and `../../../frontend/libs/api-contracts/src/generated/` (not yet scaffolded); README documents `dotnet run -- --generate-openapi-doc` switch that has no command-line parser in `Program.cs`. The README explicitly defers wiring to Story 0.4 / 0.9 CI. Confirm the export-and-generate pipeline lands by Story 0.9. (defer-target: 0.4 + 0.9)
+- [x] [Review][Defer] (R2-D6) `Direction` enum has no `Unspecified = 0` member nor explicit numeric values — `default(Direction)` is `Receivable`, so JSON deserialization of a missing field silently maps to `Receivable`, and any future enum-member reorder rewrites every persisted integer. Spec line 70 explicitly delegates this decision to Story 2.1 ("delegated decision — consumed by Epic 2 Story 2.1"); the second-pass review confirms the concern is real and provides input for the Story 2.1 decision. (defer-target: 2.1)
+
+**Dismissed (~30)** — false positives, design decisions, intentional deferrals already on record, speculative future-proofing, or cosmetic noise:
+
+- (Critical, both reviewers) Money `OverflowException` rethrow uses `ArgumentOutOfRangeException(string, Exception)` — both reviewers asserted the first arg is `paramName`. Verified against .NET source: the overload `: base(message, innerException)` passes the first arg as message. The code is correct; the diagnostic-improvement opportunity is captured as R2-P2 above.
+- ErrorCatalog ships empty (`Critical` per Blind Hunter, `High` per Edge Case Hunter) — spec line 73 explicitly mandates "initial set empty; slices register"; intentional placeholder design.
+- `IBitemporal` mutable setters (`Critical` both reviewers) — addressed by D3/3a; rationale documented in `IBitemporal.cs` XML doc.
+- `/health` duplicated and lying in Production (`Critical` both reviewers) — addressed by P11/P12 deferrals to Story 0.11.
+- Money record + `with`-expression bypassing validation — speculative; current `Currency` is `{ get; }` (read-only) so `with { Currency = "..." }` won't compile. Re-evaluate if the type is refactored to a positional record.
+- Money `default(T)` bypasses validation — addressed by P2 deferral to Story 2.1.
+- Money case-sensitivity / Turkish-locale concerns — strict-by-design; registry is the single source of truth and rejects all non-canonical input via lookup miss.
+- Money `decimal.Round(amount, 0, ...)` confusion for hypothetical 0-minor-unit currency (JPY/KRW) — no 0-minor-unit currency in `CurrencyRegistry`; revisit if added.
+- Money property test pre-rounds inputs — correct test design: rejection-of-over-precision is tested separately by `Construction_throws_when_amount_precision_exceeds_currency_minor_units` ([Theory] cases). The property test asserts the canonical-input acceptance invariant.
+- CurrencyRegistry test fixture-only verification (no independent oracle) — no realistic oracle for ISO 4217 minor-units exists in BCL; `RegionInfo` is locale-tied.
+- CurrencyRegistry `IsSupported(null)` NRE — addressed by P5 + P17 design decisions; null treated as contract violation under `<Nullable>enable</Nullable>`.
+- CurrencyRegistry.MinorUnits race condition (Blind High-7) — partly captured by R2-P1 (collapse to TryGet); the "race" is illusory in a static read-only frozen dictionary, but the code-style fix is worth doing.
+- AppHost lacks `WithDataVolume()` — addressed by previous-round dismissal (developer preference for ephemeral container).
+- AppHost `WithPgAdmin()` no auth/port pinning — local-dev only; revisit if AppHost ever ships beyond dev.
+- AppHost `WaitFor(faktuboh)` vs `WaitFor(postgres)` — addressed by previous-round dismissal (AddDatabase chains dependency on parent Postgres resource).
+- `global.json` `latestPatch` blocks newer feature bands — intentional per D4/4b strictness; documented as future spec amendment.
+- `Directory.Build.props` `LangVersion=14` rejected on older SDKs — `global.json` already pins 10.0.201; CI must have this SDK.
+- `Directory.Build.props` `TreatWarningsAsErrors=true` on test projects — no current pain; `WarningsNotAsErrors` can be added per-project if a noisy analyzer surfaces.
+- `Faktuboh.sln` missing solution-items folder for `Directory.Build.props`/`global.json` — cosmetic VS-only issue.
+- `*.csproj` files with mixed UTF-8 BOM — cosmetic; templates produced both flavors.
+- `xunit.runner.json` files empty (only `$schema`) — no current divergence; configure when actual test-runner divergence appears.
+- `DomainException` validates `code`/`message` after `: base(message)` runs — `Exception(null)` is benign per BCL, so order is suboptimal but functionally correct.
+- `DomainException` not `[Serializable]` — `BinaryFormatter` deprecated in .NET 8+; cross-process serialization is JSON-via-ProblemDetails, captured under R2-D3 deferral.
+- `SmokeTests.Project_assembly_loads()` is tautological because `ProjectReference` already loads the assembly into the test AppDomain — accepted trade-off vs the prior tautology (P20); the `Assembly.Load` form at least catches a runtime resolve failure that the previous `Assert.True(true)` would not.
+- `SharedKernelNoAggregateRootsTests` matches a non-existent type by full name (vacuous-pass today) — acknowledged by spec line 202: "this file currently passes trivially (no aggregates in SK)"; the test activates when `IAggregateRoot` is added to Domain.
+- xUnit v3 `TestContext.Current.CancellationToken` thread-safety — speculative; xUnit v3 documents this as the supported per-test pattern.
+- `OpenApiEndpointTests` substring `"\"/health\""` (with embedded quotes) — partly captured by R2-P8; the bracketed-with-quotes form already substantially restricts false-match surface, but structural assertion is strictly better.
+- `CurrencyRegistry.All` exposes underlying `FrozenDictionary` reference — `FrozenDictionary` is immutable post-build; no mutation surface to defend against.
+- Cross-document inconsistencies between architecture.md §6.3.1 / §6.3.4 / §6.5.3 and the story spec (Auditor §5: AppHost path, Domain folder layout, reference graph, ErrorCatalog location, Application + Contracts projects missing from §6.3.1) — implementation correctly followed the more recent story spec; architecture.md needs amendment as scoped follow-up work, not blocking 0.1.
+
 ## Dev Notes
 
 ### Critical guardrails (do not violate)
@@ -428,6 +484,12 @@ claude-opus-4-7 (Amelia / bmad-dev-story workflow), 2026-04-27.
 - AC8: All 5 test projects reference their source projects + required tooling. Two deviations from the story's literal package names, both required by xUnit v3 transitive-reference compatibility: (a) `FsCheck.Xunit.v3` 3.3.3 in Domain.Tests instead of `FsCheck.Xunit` (same author, v3-flavored package); (b) `Verify.XunitV3` 31.16.2 in Api.Tests instead of `Verify.Xunit`. Both serve the same testing purpose. Moq absent from all 5 projects (verified by csproj inspection). `public partial class Program;` declared at the end of `Faktuboh.Api/Program.cs` for `WebApplicationFactory<Program>` integration tests.
 - AC9: `dotnet test backend/Faktuboh.sln -c Release --no-build` -> all 5 test projects discovered and passed (28 tests, 0 failed). `MoneyTests` includes a 200-iteration FsCheck property test for round-trip construction across all 10 currencies. `CurrencyRegistryTests` asserts the 10-currency initial set count + each minor-unit value via `[Theory]/[InlineData]`.
 
+#### 2026-04-27 — Review handoff verification (Amelia)
+
+- Re-ran build + tests on the post-review tree (commit d88a271). `dotnet build backend/Faktuboh.sln -c Release` -> **0 warnings, 0 errors**. `dotnet test backend/Faktuboh.sln -c Release --no-build` -> **35/35 passed** (26 Domain + 1 Application + 1 Infrastructure + 2 Architecture + 5 Api). The earlier "31 tests" line in the Review Findings header reflects the per-patch round; the +4 increment came from the two `WebApplicationFactory<Program>` integration test files added during the same patch cycle (`HealthEndpointTests`, `OpenApiEndpointTests`) — both now appended to the File List.
+- All 9 ACs remain satisfied (Acceptance Auditor confirmed pre-handoff). The 4 Skipped patches (P2, P11, P12, P17) are deliberate design deferrals with documented "Suggested resolution" pointers to Story 2.1 (Money factory ergonomics) and Story 0.11 (production health-check posture); they are not Story 0.1 work and remain audited in the Review Findings section as the deferral trail.
+- Story status transitioned `in-progress` -> `review`. sprint-status.yaml updated in lockstep. Story is ready for `code-review` workflow (recommended: different LLM) or to merge forward into Story 0.2.
+
 ### File List
 
 **New (NEW):**
@@ -468,6 +530,8 @@ claude-opus-4-7 (Amelia / bmad-dev-story workflow), 2026-04-27.
 - `backend/tests/Faktuboh.Api.Tests/Faktuboh.Api.Tests.csproj`
 - `backend/tests/Faktuboh.Api.Tests/xunit.runner.json`
 - `backend/tests/Faktuboh.Api.Tests/SmokeTests.cs`
+- `backend/tests/Faktuboh.Api.Tests/HealthEndpointTests.cs`
+- `backend/tests/Faktuboh.Api.Tests/OpenApiEndpointTests.cs`
 - `backend/tests/Faktuboh.Infrastructure.Tests/Faktuboh.Infrastructure.Tests.csproj`
 - `backend/tests/Faktuboh.Infrastructure.Tests/xunit.runner.json`
 - `backend/tests/Faktuboh.Infrastructure.Tests/SmokeTests.cs`
@@ -495,3 +559,5 @@ claude-opus-4-7 (Amelia / bmad-dev-story workflow), 2026-04-27.
   - Bumped Aspire ServiceDefaults OTel packages to 1.15.1+ patches to clear three NU1902 advisories under `TreatWarningsAsErrors=true`.
   - Swapped to xUnit v3-flavored variants (`FsCheck.Xunit.v3`, `Verify.XunitV3`) and bumped `xunit.v3` to 3.2.2 across all 5 test projects to resolve `xunit.core` v2 vs `xunit.v3.core` collisions.
   - Result: `dotnet build -c Release` -> 0 warnings, 0 errors. `dotnet test -c Release` -> 28 tests passed across all 5 test projects.
+- **2026-04-27 — Amelia (review handoff):** Status `in-progress` -> `review` after re-verifying the post-code-review tree. `dotnet build -c Release` -> 0/0; `dotnet test -c Release --no-build` -> 35/35 passed. File List corrected to include `HealthEndpointTests.cs` and `OpenApiEndpointTests.cs` (added during the patch cycle, missed from the prior File List). The 4 `[SKIPPED]` review patches (P2, P11, P12, P17) remain deferred per their documented "Suggested resolution" pointers to Stories 2.1 and 0.11. sprint-status.yaml synced (`0-1-backend-solution-scaffold: in-progress -> review`).
+- **2026-04-27 — Round-2 code review (different LLM, fresh context):** Status `review` -> `done`. Adversarial pass with 3 parallel layers (Blind Hunter + Edge Case Hunter + Acceptance Auditor) on commit `d88a271`; 50+ raw findings normalized to **8 patches + 6 deferrals + ~30 dismissed**. All 9 ACs and 7 critical guardrails re-verified passing; all 22 prior-round patches confirmed present; all 4 prior-round deferrals re-affirmed sound. Triangulated false-positive caught: both Blind and Edge Case Hunters misread the `Money` `OverflowException` rethrow as a paramName/message confusion bug; verified against .NET source that the `(string, Exception)` overload IS the `(message, innerException)` form — code was correct, fixed as diagnostic improvement instead. **Applied (8 patches):** R2-P1 Money uses single `CurrencyRegistry.TryGetMinorUnits`; R2-P2 Money `OverflowException` rethrow now sets `ParamName` + `ActualValue`; R2-P3 Money rejects `amount > MaxAmount = 1e15m` (matches Postgres `numeric(19,4)` + FsCheck range); R2-P4 Money normalizes `-0m` → `+0m` via decimal bit-pattern strip; R2-P5 `DomainException` adds `(code, message, innerException)` ctor overload; R2-P6 Aspire `Aspire.AppHost.Sdk` 13.2.0 → 13.2.4 to align with `Aspire.Hosting.PostgreSQL`; R2-P7 `SharedKernelPurityTests` switched from NetArchTest namespace-prefix matching to `Assembly.GetReferencedAssemblies()` strict trailing-dot identity check; R2-P8 `OpenApiEndpointTests` parses OpenAPI JSON and asserts `paths./health` key (replaces substring match). Added 6 regression test cases (3 in `MoneyTests`: max-amount rejection, negative-zero normalization, plus existing; 2 [Theory] in `CurrencyRegistryTests` for `TryGetMinorUnits`). **Deferred (6):** R2-D1 Money JsonConverter → 0.4; R2-D2 ADR-024 central exception handlers → 0.4; R2-D3 `IDomainException` extraction interface → 0.4; R2-D4 `WebApplicationFactory<Program>` DB-config harness → 0.6; R2-D5 NSwag pipeline path/switch repair → 0.4 + 0.9; R2-D6 `Direction` enum `Unspecified=0` + explicit pinning → 2.1. All deferrals appended to new `_bmad-output/implementation-artifacts/deferred-work.md`. `dotnet build -c Release` -> 0 warnings, 0 errors. `dotnet test -c Release --no-build` -> **41/41 passed** (32 Domain + 1 Application + 1 Infrastructure + 2 Architecture + 5 Api).

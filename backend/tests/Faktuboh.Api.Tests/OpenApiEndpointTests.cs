@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,9 +31,18 @@ public class OpenApiEndpointTests : IClassFixture<WebApplicationFactory<Program>
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var body = await response.Content.ReadAsStringAsync(ct);
-        body.Should().Contain("\"/health\"",
-            because: "spec AC4 requires /health to appear in the source-gen OpenAPI document");
+        // Structural assertion (replaces the prior substring match on `"/health"`):
+        // parse the OpenAPI document and verify `paths` has a `/health` member.
+        // Substring matching gives false positives on description/summary/tag text
+        // that happens to mention `/health`.
+        await using var stream = await response.Content.ReadAsStreamAsync(ct);
+        using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+        doc.RootElement.TryGetProperty("paths", out var paths)
+            .Should().BeTrue(because: "OpenAPI document must contain a `paths` object");
+
+        paths.TryGetProperty("/health", out _)
+            .Should().BeTrue(because: "spec AC4 requires /health to be a member of paths in the source-gen OpenAPI document");
     }
 
     [Fact]

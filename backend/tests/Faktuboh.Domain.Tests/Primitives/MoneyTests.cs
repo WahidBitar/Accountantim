@@ -44,6 +44,29 @@ public class MoneyTests
         act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*non-negative*");
     }
 
+    [Fact]
+    public void Construction_throws_when_amount_exceeds_max_amount()
+    {
+        // R2-P3: Money rejects amounts above the numeric(19,4) ceiling.
+        var act = () => new Money(Money.MaxAmount + 1m, "EUR");
+        act.Should().Throw<ArgumentOutOfRangeException>().WithMessage("*must not exceed*");
+    }
+
+    [Fact]
+    public void Construction_normalizes_negative_zero_to_positive_zero()
+    {
+        // R2-P4: -0m bit pattern must not survive into ledger arithmetic.
+        var negativeZero = new decimal(0, 0, 0, true, 0);
+
+        var money = new Money(negativeZero, "EUR");
+
+        // Equality check (`-0m == 0m` is true) is not enough — round-trip via
+        // GetBits to verify the sign bit was actually stripped.
+        var bits = decimal.GetBits(money.Amount);
+        var signBitSet = (bits[3] & 0x80000000) != 0;
+        signBitSet.Should().BeFalse(because: "negative-zero must be normalized to +0m");
+    }
+
     [Theory]
     [InlineData("EUR", 1.234)]   // 3 dp on a 2-dp currency
     [InlineData("USD", 0.001)]

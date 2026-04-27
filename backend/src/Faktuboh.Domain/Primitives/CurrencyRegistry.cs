@@ -35,4 +35,12 @@ public static class CurrencyRegistry
         Currencies.TryGetValue(currency, out var minor)
             ? minor
             : throw new ArgumentException($"Unsupported currency '{currency}'", nameof(currency));
+
+    /// <summary>
+    /// Atomic lookup combining <see cref="IsSupported"/> + <see cref="MinorUnits"/>.
+    /// Preferred form for callers that need both signals (e.g. <see cref="Money"/> ctor),
+    /// avoiding the redundant frozen-dictionary lookup of the check-then-fetch pattern.
+    /// </summary>
+    public static bool TryGetMinorUnits(string currency, out int minorUnits) =>
+        Currencies.TryGetValue(currency, out minorUnits);
 }
